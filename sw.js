@@ -1,26 +1,35 @@
-const CACHE_NAME = 'flashcard-v1';
-const ASSETS_TO_CACHE = [
-  './',
-  './index.html',
-  './style.css',
-  './script.js',
-  './manifest.json'
-];
+// RadPrep Service Worker v4 — network-first for HTML
+const CACHE_NAME = 'radprep-v4';
+const ASSETS = ['./', './index.html', './style.css', './script.js', './manifest.json'];
 
-// Install the service worker and cache the files
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
-  );
+self.addEventListener('install', (e) => {
+    e.waitUntil(caches.open(CACHE_NAME).then((c) => c.addAll(ASSETS)));
+    self.skipWaiting();
 });
 
-// Intercept network requests and serve from cache if offline
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
-    })
-  );
+self.addEventListener('activate', (e) => {
+    e.waitUntil(
+        caches.keys().then((keys) =>
+            Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+        )
+    );
+    self.clients.claim();
+});
+
+self.addEventListener('fetch', (e) => {
+    // For HTML navigation, ALWAYS try network first so updates appear
+    if (e.request.mode === 'navigate') {
+        e.respondWith(
+            fetch(e.request)
+                .then((res) => {
+                    const copy = res.clone();
+                    caches.open(CACHE_NAME).then((c) => c.put(e.request, copy));
+                    return res;
+                })
+                .catch(() => caches.match(e.request))
+        );
+        return;
+    }
+    // For other assets, cache-first is fine
+    e.respondWith(caches.match(e.request).then((c) => c || fetch(e.request)));
 });
