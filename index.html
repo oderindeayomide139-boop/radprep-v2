@@ -1,31 +1,277 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Physics Flashcard</title>
-  <!-- This links our HTML to our CSS file -->
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RadPrep | Radiography Learning Platform</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
 </head>
 <body>
-  
-  <div class="card-container">
-    <!-- We give this an ID so JavaScript can find it later -->
-    <div class="card" id="flashcard">
-      
-      <div class="card-front">
-        <h2>Concept Check</h2>
-        <p>What is the primary function of the collimator in an X-ray tube?</p>
-      </div>
-      
-      <div class="card-back">
-        <h2>Answer</h2>
-        <p>It restricts the size and shape of the X-ray beam to reduce patient dose and improve image contrast.</p>
-      </div>
-      
-    </div>
-  </div>
 
-  <!-- This links our HTML to our JavaScript file -->
-  <script src="script.js"></script>
+<div id="disclaimer-modal" class="modal-overlay hidden-view">
+    <div class="modal-card">
+        <h2>⚠️ Before You Use RadPrep</h2>
+        <p>RadPrep is a <strong>student-built study aid</strong>. All content is for revision only and does not replace your lecturer, departmental notes, or the RRBN syllabus.</p>
+        <button id="disclaimer-accept" class="primary-btn">I understand — continue</button>
+    </div>
+</div>
+
+<div id="auth-container">
+    <div class="auth-card">
+        <h1 class="auth-logo">☢️ RadPrep</h1>
+        <p id="auth-subtitle">Student Portal Login</p>
+        <div id="auth-form">
+            <input type="text" id="auth-username" placeholder="Username" autocomplete="username">
+            <input type="password" id="auth-password" placeholder="Password (min 4 chars)" autocomplete="current-password">
+            <select id="auth-university" class="hidden-view">
+                <option value="" disabled selected>Select Your University</option>
+                <option value="FUOYE">Federal University Oye-Ekiti (FUOYE)</option>
+                <option value="UNN">University of Nigeria, Nsukka (UNN)</option>
+                <option value="UNILAG">University of Lagos (UNILAG)</option>
+                <option value="UNIBEN">University of Benin (UNIBEN)</option>
+                <option value="LAUTECH">Ladoke Akintola University of Technology (LAUTECH)</option>
+                <option value="UNIZIK">Nnamdi Azikiwe University (UNIZIK)</option>
+                <option value="UDUSOK">Usmanu Danfodiyo University, Sokoto (UDUSOK)</option>
+                <option value="BUK">Bayero University Kano (BUK)</option>
+                <option value="EBSU">Ebonyi State University (EBSU)</option>
+                <option value="Other">Other</option>
+            </select>
+            <button id="login-btn" type="button">Login</button>
+        </div>
+        <p class="auth-toggle-text">
+            <span id="auth-toggle-msg">Don't have an account?</span>
+            <a href="#" id="auth-toggle-btn">Sign Up</a>
+        </p>
+    </div>
+</div>
+
+<div id="app-container" class="hidden-view">
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="logo">☢️ RadPrep</div>
+        <div class="user-profile-badge"><span id="user-display-name">Student</span></div>
+        <nav>
+            <button class="nav-btn active" data-target="curriculum-section">📚 Curriculum</button>
+            <button class="nav-btn" data-target="flashcards-section">🗂️ Flashcards</button>
+            <button class="nav-btn" data-target="quiz-section">📝 Question Bank</button>
+            <button class="nav-btn" data-target="review-section">🔁 Review Deck <span id="review-count" class="nav-badge hidden-view">0</span></button>
+            <button class="nav-btn" data-target="notes-section">📖 Study Notes</button>
+            <button class="nav-btn" data-target="history-section">🏛️ History</button>
+            <button class="nav-btn" data-target="library-section">📄 Library</button>
+            <button class="nav-btn" data-target="scholarship-section">💰 Scholarships</button>
+            <button class="nav-btn" data-target="helper-section">🤖 Study Helper</button>
+            <button class="nav-btn" data-target="leaderboard-section">🏆 Leaderboard</button>
+        </nav>
+        <button id="logout-btn">🚪 Log Out</button>
+    </aside>
+
+    <main class="workspace">
+        <header class="top-bar">
+            <button id="menu-toggle" aria-label="Open menu">☰</button>
+            <h2 id="section-title">Academic Curriculum</h2>
+            <button id="theme-btn" aria-label="Toggle theme">🌙</button>
+        </header>
+
+        <section id="curriculum-section" class="app-section active-section">
+            <div class="level-tabs">
+                <button class="level-btn" data-level="100L">100L</button>
+                <button class="level-btn" data-level="200L">200L</button>
+                <button class="level-btn active-level" data-level="300L">300L</button>
+                <button class="level-btn" data-level="400L">400L</button>
+                <button class="level-btn" data-level="500L">500L</button>
+            </div>
+            <div id="overall-stats" class="overall-stats hidden-view"></div>
+            <div class="course-grid" id="course-grid"></div>
+        </section>
+
+        <section id="course-detail-section" class="app-section hidden-section">
+            <button class="back-btn" data-back="curriculum-section">⬅ Back to Courses</button>
+            <div id="course-detail-content"></div>
+        </section>
+
+        <section id="flashcards-section" class="app-section hidden-section">
+            <div class="section-toolbar">
+                <select id="topic-filter">
+                    <option value="All">All Topics</option>
+                    <option value="Physics">Radiation Physics</option>
+                    <option value="Procedures">Special Procedures</option>
+                    <option value="Ultrasound">Ultrasound</option>
+                    <option value="Anatomy">Cross-Sectional Anatomy</option>
+                    <option value="Protection">Radiation Protection</option>
+                </select>
+            </div>
+            <div class="progress-container"><div class="progress-bar" id="progress-bar"></div></div>
+            <div id="card-counter">Card 0 of 0</div>
+            <div class="card-container">
+                <div class="card" id="flashcard">
+                    <div class="card-front">
+                        <span class="topic-tag" id="front-topic">Topic</span>
+                        <p id="card-question">Loading…</p>
+                    </div>
+                    <div class="card-back"><p id="card-answer">Loading…</p></div>
+                </div>
+            </div>
+            <div class="button-group">
+                <button id="prev-btn" class="grey-btn">Previous</button>
+                <button id="flip-btn" class="primary-btn">Flip</button>
+                <button id="shuffle-btn" class="purple-btn">🔀 Shuffle</button>
+                <button id="next-btn" class="primary-btn">Next</button>
+            </div>
+            <div class="form-container">
+                <h3>Create Study Card</h3>
+                <select id="new-topic">
+                    <option value="Physics">Radiation Physics</option>
+                    <option value="Procedures">Special Procedures</option>
+                    <option value="Ultrasound">Ultrasound</option>
+                    <option value="Anatomy">Cross-Sectional Anatomy</option>
+                    <option value="Protection">Radiation Protection</option>
+                </select>
+                <input type="text" id="new-question" placeholder="Question">
+                <input type="text" id="new-answer" placeholder="Answer">
+                <button id="add-btn" class="green-btn">Save to Deck</button>
+            </div>
+        </section>
+
+        <section id="quiz-section" class="app-section hidden-section">
+            <div id="quiz-setup">
+                <div class="placeholder-box">
+                    <h3>📝 Question Bank</h3>
+                    <p>Open any course from the Curriculum tab and click <strong>Take Quiz</strong> to start an assessment.</p>
+                </div>
+            </div>
+            <div id="quiz-active" class="hidden-view quiz-container">
+                <header class="quiz-header">
+                    <button id="exit-quiz-btn" class="grey-btn small-btn">⬅ Exit</button>
+                    <h3 id="quiz-course-title">Quiz</h3>
+                    <div id="quiz-progress">Q 1 / 5</div>
+                </header>
+                <div class="quiz-body">
+                    <h2 id="quiz-question-text">Loading…</h2>
+                    <div id="quiz-image-container" class="hidden-view"></div>
+                    <div class="quiz-options" id="quiz-options"></div>
+                    <div id="quiz-explanation" class="quiz-explanation hidden-view"></div>
+                    <button id="quiz-next-btn" class="primary-btn hidden-view" style="margin-top:16px;">Next Question →</button>
+                </div>
+            </div>
+            <div id="quiz-results" class="hidden-view placeholder-box">
+                <h3 style="font-size:24px;margin-bottom:10px;">🏆 Quiz Completed!</h3>
+                <p id="quiz-score-display" style="font-size:18px;margin-bottom:20px;"></p>
+                <div class="button-group" style="justify-content:center;">
+                    <button id="retry-quiz-btn" class="purple-btn">Retry Quiz</button>
+                    <button id="return-curriculum-btn" class="green-btn">Back to Course</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="review-section" class="app-section hidden-section">
+            <div class="info-container">
+                <div class="info-banner purple-banner">
+                    <h3>🔁 Review Deck</h3>
+                    <p>Every question you got wrong is saved here. Get them right in a review session to remove them. <strong>Review sessions don't affect your leaderboard score.</strong></p>
+                </div>
+                <div id="review-summary" class="placeholder-box"></div>
+                <div class="review-actions" id="review-actions"></div>
+            </div>
+        </section>
+
+        <section id="notes-section" class="app-section hidden-section">
+            <div class="notes-workspace">
+                <div class="notes-sidebar">
+                    <h3>Lecture Notes</h3>
+                    <div class="notes-list" id="notes-list"></div>
+                </div>
+                <div class="notes-reader" id="notes-reader">
+                    <h2 id="note-title">Select a topic to start reading</h2>
+                    <div id="note-content">Choose any topic from the left menu to view detailed notes, formulas, and clinical pearls.</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="history-section" class="app-section hidden-section">
+            <div class="info-container">
+                <div class="info-banner blue-banner">
+                    <h3>🏛️ History of Radiography</h3>
+                    <p>Global milestones and the Nigerian story — from Röntgen's discovery to modern practice.</p>
+                </div>
+                <div class="history-timeline" id="history-timeline"></div>
+            </div>
+        </section>
+
+        <section id="library-section" class="app-section hidden-section">
+            <div class="info-container">
+                <div class="info-banner green-banner">
+                    <h3>📄 Free Reference Library</h3>
+                    <p>Curated open-access resources. All links point to legitimate, publicly available sources.</p>
+                </div>
+                <div class="library-grid" id="library-grid"></div>
+            </div>
+        </section>
+
+        <section id="scholarship-section" class="app-section hidden-section">
+            <div class="info-container">
+                <div class="info-banner green-banner">
+                    <h3>💰 Scholarships & Grants</h3>
+                    <p>Always verify on the official portal before applying. Last checked: <span id="scholarship-checked"></span></p>
+                </div>
+                <div class="scholarship-list" id="scholarship-list"></div>
+            </div>
+        </section>
+
+        <section id="helper-section" class="app-section hidden-section">
+            <div class="info-container">
+                <div class="info-banner purple-banner">
+                    <h3>🤖 Study Helper</h3>
+                    <p id="helper-mode">Mode: <strong>Local keyword matcher</strong> — configure Gemini in script.js for real AI.</p>
+                </div>
+                <div class="ai-chat-container">
+                    <div class="ai-chat-history" id="ai-chat-history">
+                        <div class="chat-message ai-msg">
+                            <strong>Helper:</strong> Ask me about ALARA, kVp, mAs, Hounsfield units, MRI, or ultrasound.
+                        </div>
+                    </div>
+                    <div class="ai-controls">
+                        <input type="text" id="ai-chat-input" placeholder="Ask a question…">
+                        <button id="ai-send-btn" class="primary-btn">Send</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="leaderboard-section" class="app-section hidden-section">
+            <div class="leaderboard-container">
+                <div class="leaderboard-header">
+                    <h2>🏆 Practice Leaderboard</h2>
+                    <p>Live scores synced across all students.</p>
+                </div>
+                <div class="my-stats-card">
+                    <div class="avatar-upload-wrapper">
+                        <img id="user-avatar-preview" src="https://api.iconify.design/lucide:user.svg?color=%232563eb" alt="Avatar">
+                        <input type="file" id="avatar-file-input" accept="image/*" title="Upload profile picture">
+                    </div>
+                    <div class="my-stats-info">
+                        <h4 id="leaderboard-username-display">Student</h4>
+                        <p id="leaderboard-uni-display">University: —</p>
+                    </div>
+                    <div class="streak-badge">🔥 <span id="user-streak-count">0</span> day streak</div>
+                </div>
+                <div class="leaderboard-table-wrapper">
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr><th>Rank</th><th>Student</th><th>University</th><th>Streak</th><th>Score</th></tr>
+                        </thead>
+                        <tbody id="leaderboard-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
