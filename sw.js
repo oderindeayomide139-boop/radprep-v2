@@ -1,5 +1,4 @@
-// RadPrep Service Worker v4 — network-first for HTML
-const CACHE_NAME = 'radprep-v4';
+const CACHE_NAME = 'radprep-v5';
 const ASSETS = ['./', './index.html', './style.css', './script.js', './manifest.json'];
 
 self.addEventListener('install', (e) => {
@@ -17,7 +16,7 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-    // For HTML navigation, ALWAYS try network first so updates appear
+    // Network-first for HTML navigation (so updates appear immediately)
     if (e.request.mode === 'navigate') {
         e.respondWith(
             fetch(e.request)
@@ -30,6 +29,6 @@ self.addEventListener('fetch', (e) => {
         );
         return;
     }
-    // For other assets, cache-first is fine
+    // Cache-first for other assets
     e.respondWith(caches.match(e.request).then((c) => c || fetch(e.request)));
 });

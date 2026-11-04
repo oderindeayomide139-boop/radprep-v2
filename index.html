@@ -22,10 +22,12 @@
 <div id="auth-container">
     <div class="auth-card">
         <h1 class="auth-logo">☢️ RadPrep</h1>
-        <p id="auth-subtitle">Student Portal Login</p>
+        <p id="auth-subtitle">Sign in to your account</p>
+
         <div id="auth-form">
-            <input type="text" id="auth-username" placeholder="Username" autocomplete="username">
-            <input type="password" id="auth-password" placeholder="Password (min 4 chars)" autocomplete="current-password">
+            <input type="text" id="auth-username" placeholder="Username (signup only)" class="hidden-view">
+            <input type="email" id="auth-email" placeholder="Email address" autocomplete="email">
+            <input type="password" id="auth-password" placeholder="Password (min 6 chars)" autocomplete="current-password">
             <select id="auth-university" class="hidden-view">
                 <option value="" disabled selected>Select Your University</option>
                 <option value="FUOYE">Federal University Oye-Ekiti (FUOYE)</option>
@@ -39,8 +41,10 @@
                 <option value="EBSU">Ebonyi State University (EBSU)</option>
                 <option value="Other">Other</option>
             </select>
-            <button id="login-btn" type="button">Login</button>
+            <button id="login-btn" type="button">Sign In</button>
+            <p id="auth-error" class="auth-error hidden-view"></p>
         </div>
+
         <p class="auth-toggle-text">
             <span id="auth-toggle-msg">Don't have an account?</span>
             <a href="#" id="auth-toggle-btn">Sign Up</a>
@@ -225,7 +229,7 @@
             <div class="info-container">
                 <div class="info-banner purple-banner">
                     <h3>🤖 Study Helper</h3>
-                    <p id="helper-mode">Mode: <strong>Local keyword matcher</strong> — configure Gemini in script.js for real AI.</p>
+                    <p id="helper-mode">Mode: <strong>Local keyword matcher</strong>.</p>
                 </div>
                 <div class="ai-chat-container">
                     <div class="ai-chat-history" id="ai-chat-history">
