@@ -1,7 +1,7 @@
 // ==========================================
-// RadPrep v4 — Supabase Auth + persistent data
+// RadPrep v7 — Clean build with bulletproof auth hiding
 // ==========================================
-console.log("🔥 RadPrep v4 loaded");
+console.log("🔥 RadPrep v7 loaded");
 
 const SUPABASE_URL = 'https://puqxlbtdkajzlxgbtsnx.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_wibge1aU64UKmHdchdkywA_jmZ2SNMp';
@@ -74,40 +74,40 @@ const curriculumData = {
 // ==========================================
 const quizBank = {
     "PHY 101": [
-        { q: "The SI unit of frequency is the:", o: ["Hertz", "Newton", "Joule", "Watt"], a: 0, why: "Frequency is measured in hertz (Hz), defined as cycles per second." },
-        { q: "Which region of the EM spectrum has the shortest wavelength?", o: ["Radio", "Infrared", "X-rays", "Gamma rays"], a: 3, why: "Gamma rays have the shortest wavelengths and highest energy." },
+        { q: "The SI unit of frequency is the:", o: ["Hertz", "Newton", "Joule", "Watt"], a: 0, why: "Frequency is measured in hertz (Hz)." },
+        { q: "Which region of the EM spectrum has the shortest wavelength?", o: ["Radio", "Infrared", "X-rays", "Gamma rays"], a: 3, why: "Gamma rays have the shortest wavelengths." },
         { q: "Newton's second law is expressed as:", o: ["F = ma", "E = mc²", "V = IR", "P = IV"], a: 0, why: "Force equals mass times acceleration." }
     ],
     "CHM 101": [
         { q: "The atomic number of an element equals the number of:", o: ["Neutrons", "Protons", "Electrons + neutrons", "Mass number"], a: 1, why: "Atomic number (Z) equals the proton count." },
-        { q: "Which type of radiation is stopped by a sheet of paper?", o: ["Alpha", "Beta", "Gamma", "X-ray"], a: 0, why: "Alpha particles are heavy and minimally penetrating." },
-        { q: "Isotopes of an element differ in:", o: ["Protons", "Electrons", "Neutrons", "Charge"], a: 2, why: "Isotopes share proton count but differ in neutron count." }
+        { q: "Which type of radiation is stopped by a sheet of paper?", o: ["Alpha", "Beta", "Gamma", "X-ray"], a: 0, why: "Alpha particles are minimally penetrating." },
+        { q: "Isotopes of an element differ in:", o: ["Protons", "Electrons", "Neutrons", "Charge"], a: 2, why: "Isotopes differ in neutron count." }
     ],
     "RDG 301": [
-        { q: "Which interaction predominates in soft tissue at diagnostic energies?", o: ["Photoelectric effect", "Compton scattering", "Pair production", "Coherent scattering"], a: 1, why: "Compton scattering dominates in soft tissue between roughly 30–150 keV." },
+        { q: "Which interaction predominates in soft tissue at diagnostic energies?", o: ["Photoelectric effect", "Compton scattering", "Pair production", "Coherent scattering"], a: 1, why: "Compton scattering dominates in soft tissue between 30–150 keV." },
         { q: "The SI unit of equivalent dose is the:", o: ["Gray", "Becquerel", "Sievert", "Coulomb/kg"], a: 2, why: "Equivalent dose is measured in sieverts (Sv)." },
-        { q: "The inverse square law states intensity is proportional to:", o: ["1/d", "1/d²", "d²", "d"], a: 1, why: "Intensity falls off as the square of distance from a point source." },
-        { q: "The standard anode material in a diagnostic X-ray tube is:", o: ["Copper", "Tungsten", "Aluminium", "Molybdenum"], a: 1, why: "Tungsten has high atomic number and high melting point." },
-        { q: "Increasing kVp primarily affects the beam by:", o: ["Raising quantity and quality", "Lowering quality only", "Only raising quantity", "No effect"], a: 0, why: "Higher kVp increases photon energy and number produced." },
+        { q: "The inverse square law states intensity is proportional to:", o: ["1/d", "1/d²", "d²", "d"], a: 1, why: "Intensity falls off as the square of distance." },
+        { q: "The standard anode material in a diagnostic X-ray tube is:", o: ["Copper", "Tungsten", "Aluminium", "Molybdenum"], a: 1, why: "Tungsten has high atomic number and melting point." },
+        { q: "Increasing kVp primarily affects the beam by:", o: ["Raising quantity and quality", "Lowering quality only", "Only raising quantity", "No effect"], a: 0, why: "Higher kVp increases photon energy and number." },
         { q: "Which of these is NOT a cardinal radiation protection principle?", o: ["Time", "Distance", "Shielding", "Amplification"], a: 3, why: "The three pillars are time, distance, and shielding." },
-        { q: "Characteristic X-rays are produced when:", o: ["Electrons decelerate in the nucleus field", "An outer-shell electron fills an inner-shell vacancy", "Two photons collide", "A nucleus splits"], a: 1, why: "Shell transitions produce photons of fixed, element-specific energy." },
+        { q: "Characteristic X-rays are produced when:", o: ["Electrons decelerate in the nucleus field", "An outer-shell electron fills an inner-shell vacancy", "Two photons collide", "A nucleus splits"], a: 1, why: "Shell transitions produce photons of fixed energy." },
         { q: "The annual occupational dose limit (ICRP, averaged) is:", o: ["1 mSv", "5 mSv", "20 mSv", "100 mSv"], a: 2, why: "ICRP recommends 20 mSv per year averaged over 5 years." },
-        { q: "Filtration of the X-ray beam primarily:", o: ["Increases low-energy photons", "Removes low-energy photons", "Increases contrast", "Raises tube current"], a: 1, why: "Filtration removes low-energy photons that only add patient dose." },
-        { q: "The photoelectric effect is most likely in:", o: ["Soft tissue at high kVp", "Bone at low kVp", "Air at any kVp", "Fat at any kVp"], a: 1, why: "Photoelectric absorption rises with atomic number and falls as photon energy increases." }
+        { q: "Filtration of the X-ray beam primarily:", o: ["Increases low-energy photons", "Removes low-energy photons", "Increases contrast", "Raises tube current"], a: 1, why: "Filtration removes low-energy photons that add only patient dose." },
+        { q: "The photoelectric effect is most likely in:", o: ["Soft tissue at high kVp", "Bone at low kVp", "Air at any kVp", "Fat at any kVp"], a: 1, why: "Photoelectric absorption rises with atomic number and falls with photon energy." }
     ],
     "RDG 303": [
-        { q: "The PA chest projection is taken at what standard SID?", o: ["100 cm", "150 cm", "180 cm", "200 cm"], a: 2, why: "180 cm SID reduces magnification of the heart." },
+        { q: "The PA chest projection is taken at what standard SID?", o: ["100 cm", "150 cm", "180 cm", "200 cm"], a: 2, why: "180 cm SID reduces heart magnification." },
         { q: "Which view best demonstrates the acromioclavicular joint?", o: ["AP shoulder", "PA oblique with weights", "Axial shoulder", "Scapular Y"], a: 1, why: "Weighted PA view stresses the AC joint." },
-        { q: "The occipitomental (Water's) view demonstrates the:", o: ["Mandible", "Facial bones and sinuses", "Cervical spine", "TMJ"], a: 1, why: "Water's view is the standard for facial bones and sinuses." },
+        { q: "The occipitomental (Water's) view demonstrates the:", o: ["Mandible", "Facial bones and sinuses", "Cervical spine", "TMJ"], a: 1, why: "Water's view is standard for facial bones." },
         { q: "A right lateral decubitus abdomen is used to detect:", o: ["Free air", "Renal stones", "Bowel obstruction only", "Gallstones only"], a: 0, why: "Free air rises to the uppermost side." },
-        { q: "The standard centring point for an AP knee is:", o: ["Patella", "1 cm distal to apex of patella", "Tibial tuberosity", "Femoral condyles"], a: 1, why: "Centring below the patellar apex aligns the joint space." },
+        { q: "The standard centring point for an AP knee is:", o: ["Patella", "1 cm distal to apex of patella", "Tibial tuberosity", "Femoral condyles"], a: 1, why: "Centring below the patellar apex aligns the joint." },
         { q: "The Scapular Y view primarily assesses:", o: ["Glenohumeral alignment", "Clavicle fracture", "AC joint", "Elbow"], a: 0, why: "The Y view shows the humeral head relative to the scapular Y." },
         { q: "Which projection best demonstrates the cervical spine's intervertebral foramina?", o: ["AP", "Lateral", "Oblique", "PA"], a: 2, why: "Oblique views open the intervertebral foramina." },
-        { q: "A KUB radiograph covers which region?", o: ["Chest only", "Kidneys, ureters, bladder", "Skull", "Ankle"], a: 1, why: "KUB stands for kidneys, ureters, and bladder." }
+        { q: "A KUB radiograph covers which region?", o: ["Chest only", "Kidneys, ureters, bladder", "Skull", "Ankle"], a: 1, why: "KUB = kidneys, ureters, bladder." }
     ],
     "RDG 305": [
         { q: "The standard wrist PA projection is centred on the:", o: ["Radial styloid", "Mid-carpal region", "Ulnar styloid", "Base of 3rd metacarpal"], a: 1, why: "Centring on mid-carpal includes all carpal bones." },
-        { q: "Which view is used to demonstrate the ankle mortise?", o: ["AP", "Lateral", "15° internal oblique", "Axial"], a: 2, why: "15° internal rotation shows the joint space clearly." },
+        { q: "Which view is used to demonstrate the ankle mortise?", o: ["AP", "Lateral", "15° internal oblique", "Axial"], a: 2, why: "15° internal rotation shows the joint space." },
         { q: "For a lateral lumbar spine, the patient is positioned:", o: ["Supine", "Lateral decubitus", "Standing or lateral recumbent", "Prone"], a: 2, why: "Standing/lateral recumbent best demonstrate disc spaces." },
         { q: "The AP foot projection is taken with the central ray angled:", o: ["0°", "15° cephalad", "15° caudad", "30° caudad"], a: 1, why: "15° cephalad opens the tarsometatarsal spaces." },
         { q: "A PA hand radiograph is performed with the hand:", o: ["Clenched", "Pronated flat on cassette", "Supinated", "In a fist"], a: 1, why: "Flat pronation keeps fingers parallel to the receptor." },
@@ -153,21 +153,15 @@ const quizBank = {
         { q: "Which artifact is caused by patient motion?", o: ["Grid cut-off", "Blur / unsharpness", "Backscatter fog", "Chemical fog"], a: 1, why: "Movement during exposure produces motion blur." },
         { q: "A Mach band is an example of:", o: ["Grid error", "Physiological/optical edge enhancement", "Processing fault", "Detector fault"], a: 1, why: "Mach bands are optical edge effects." },
         { q: "Grid cut-off is typically caused by:", o: ["Wrong SID or angulation", "Patient movement", "Film fog", "Low mAs"], a: 0, why: "Grids must be used within their focal range at the correct SID." },
-        { q: "A repeat radiograph because of rotation is best prevented by:", o: ["Increasing kVp", "Checking patient positioning before exposure", "Using smaller film", "Reducing SID"], a: 1, why: "Pre-exposure positioning checks prevent rotational repeats." }
+        { q: "A repeat radiograph because of rotation is best prevented by:", o: ["Increasing kVp", "Checking patient positioning before exposure", "Using smaller film", "Reducing SID"], a: 1, why: "Pre-exposure positioning checks prevent repeats." }
     ]
-};// ==========================================
+};
+
+// ==========================================
 // AUTH
 // ==========================================
-function showAuthError(msg) {
-    const el = $('auth-error');
-    el.textContent = msg;
-    el.classList.remove('hidden-view');
-}
-
-function clearAuthError() {
-    $('auth-error').classList.add('hidden-view');
-}
-
+function showAuthError(msg) { const el = $('auth-error'); el.textContent = msg; el.classList.remove('hidden-view'); }
+function clearAuthError() { $('auth-error').classList.add('hidden-view'); }
 function setAuthButtonLoading(loading) {
     const btn = $('login-btn');
     btn.disabled = loading;
@@ -179,61 +173,65 @@ function toggleAuthMode(e) {
     authMode = authMode === 'login' ? 'signup' : 'login';
     const isSignup = authMode === 'signup';
     clearAuthError();
-    $('auth-subtitle').textContent = isSignup ? 'Create your student account' : 'Sign in to your account';
-    $('auth-username').classList.toggle('hidden-view', !isSignup);
+    $('auth-username').classList.remove('hidden-view');
+    $('auth-email').classList.toggle('hidden-view', !isSignup);
     $('auth-university').classList.toggle('hidden-view', !isSignup);
+    $('auth-subtitle').textContent = isSignup ? 'Create your student account' : 'Sign in to your account';
     $('login-btn').textContent = isSignup ? 'Create Account' : 'Sign In';
     $('auth-toggle-msg').textContent = isSignup ? 'Already have an account?' : "Don't have an account?";
     $('auth-toggle-btn').textContent = isSignup ? 'Sign In' : 'Sign Up';
 }
 
 async function handleAuthSubmit() {
-    if (!supabaseClient) return showAuthError('Server not reachable. Please check your internet connection and refresh.');
+    if (!supabaseClient) return showAuthError('Server not reachable. Please refresh.');
     clearAuthError();
-    const email = ($('auth-email').value || '').trim();
+
+    const username = ($('auth-username').value || '').trim();
     const password = ($('auth-password').value || '').trim();
 
-    if (!email || !email.includes('@')) return showAuthError('Please enter a valid email address.');
+    if (!username) return showAuthError('Please enter a username.');
     if (password.length < 6) return showAuthError('Password must be at least 6 characters.');
 
     if (authMode === 'signup') {
-        const username = ($('auth-username').value || '').trim();
+        const email = ($('auth-email').value || '').trim();
         const university = $('auth-university').value;
-        if (!username) return showAuthError('Please enter a username.');
-        if (username.length < 3) return showAuthError('Username must be at least 3 characters.');
+        if (!email || !email.includes('@')) return showAuthError('Please enter a valid email address.');
         if (!university) return showAuthError('Please select your university.');
 
         setAuthButtonLoading(true);
         try {
             const { data, error } = await supabaseClient.auth.signUp({
-                email,
-                password,
-                options: { data: { username, university } }
+                email, password,
+                options: { data: { username, university, email } }
             });
             if (error) throw error;
             if (!data.session) {
-                // Email confirmation is ON — show message
-                $('auth-form').innerHTML = `<p class="auth-success">✅ Account created!<br><br>Check your email (<strong>${email}</strong>) and click the confirmation link, then come back and sign in.</p>`;
+                $('auth-form').innerHTML = `<p class="auth-success">✅ Account created!<br><br>Check your email <strong>${email}</strong> for the confirmation link, then sign in.</p>`;
                 return;
             }
-            // Email confirmation is OFF — user is already signed in
-            // onAuthStateChange will fire and handle the rest
         } catch (err) {
             setAuthButtonLoading(false);
-            if (err.message.includes('already registered')) showAuthError('This email is already registered. Try signing in instead.');
-            else showAuthError(err.message || 'Signup failed. Please try again.');
+            const msg = (err.message || '').toLowerCase();
+            if (msg.includes('already registered')) showAuthError('This email is already registered. Try signing in.');
+            else if (msg.includes('duplicate') || msg.includes('unique')) showAuthError('This username is already taken.');
+            else showAuthError(err.message || 'Signup failed.');
         }
     } else {
         setAuthButtonLoading(true);
         try {
+            const { data: email, error: lookupErr } = await supabaseClient.rpc('get_email_by_username', { p_username: username });
+            if (lookupErr) throw lookupErr;
+            if (!email) {
+                setAuthButtonLoading(false);
+                return showAuthError('Username not found. Please check your spelling or sign up.');
+            }
             const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
             if (error) throw error;
-            // onAuthStateChange will fire and handle the rest
         } catch (err) {
             setAuthButtonLoading(false);
-            if (err.message.includes('Invalid login')) showAuthError('Invalid email or password. Please try again.');
-            else if (err.message.includes('Email not confirmed')) showAuthError('Please confirm your email first — check your inbox for the link.');
-            else showAuthError(err.message || 'Login failed. Please try again.');
+            if ((err.message || '').includes('Invalid login')) showAuthError('Invalid username or password.');
+            else if ((err.message || '').includes('Email not confirmed')) showAuthError('Email not confirmed. Disable "Confirm email" in Supabase.');
+            else showAuthError(err.message || 'Login failed.');
         }
     }
 }
@@ -245,56 +243,52 @@ async function ensureProfile(user) {
             await supabaseClient.from('profiles').insert({
                 id: user.id,
                 username: user.user_metadata?.username || user.email.split('@')[0],
-                university: user.user_metadata?.university || 'Other'
+                university: user.user_metadata?.university || 'Other',
+                email: user.email
             });
         }
-    } catch (err) { console.warn('Profile ensure failed:', err); }
+    } catch (err) { console.warn('ensureProfile:', err); }
 }
 
 async function loadUserData(user) {
-    // Progress
     try {
         const { data, error } = await supabaseClient.from('user_progress').select('*').eq('user_id', user.id);
         if (error) throw error;
         progressCache = {};
         (data || []).forEach(row => {
             progressCache[row.course_code] = {
-                attempts: row.attempts,
-                totalCorrect: row.total_correct,
-                totalPossible: row.total_possible,
-                best: row.best_score,
-                bestTotal: row.best_total,
-                lastDate: row.last_date
+                attempts: row.attempts, totalCorrect: row.total_correct, totalPossible: row.total_possible,
+                best: row.best_score, bestTotal: row.best_total, lastDate: row.last_date
             };
         });
-    } catch (err) { console.warn('Progress load failed:', err); progressCache = {}; }
+    } catch (err) { console.warn('progress load:', err); progressCache = {}; }
 
-    // Review deck
     try {
         const { data, error } = await supabaseClient.from('review_deck').select('*').eq('user_id', user.id);
         if (error) throw error;
         reviewCache = (data || []).map(row => ({ code: row.course_code, idx: row.question_index }));
-    } catch (err) { console.warn('Deck load failed:', err); reviewCache = []; }
+    } catch (err) { console.warn('deck load:', err); reviewCache = []; }
 }
 
 async function handleSignedIn(user) {
+    if (currentUser && currentUser.id === user.id) return;
     const username = user.user_metadata?.username || user.email.split('@')[0];
     const university = user.user_metadata?.university || 'Other';
     currentUser = { id: user.id, username, university, email: user.email };
-
     await ensureProfile(user);
     await loadUserData(user);
     enterApp();
 }
 
 function enterApp() {
-    $('auth-container').classList.add('hidden-view');
+    // BULLETPROOF: hide auth using inline !important — cannot be overridden
+    const authEl = $('auth-container');
+    if (authEl) authEl.style.setProperty('display', 'none', 'important');
     $('app-container').classList.remove('hidden-view');
     $('user-display-name').textContent = currentUser.username;
     $('leaderboard-username-display').textContent = currentUser.username;
     $('leaderboard-uni-display').textContent = 'University: ' + currentUser.university;
     setAuthButtonLoading(false);
-
     renderCurriculum(activeLevel);
     renderFlashcard();
     renderNotesList();
@@ -309,47 +303,27 @@ function enterApp() {
 
 async function handleLogout() {
     if (supabaseClient) await supabaseClient.auth.signOut();
-    currentUser = null;
-    progressCache = {};
-    reviewCache = [];
-    $('app-container').classList.add('hidden-view');
-    $('auth-container').classList.remove('hidden-view');
-    $('auth-password').value = '';
-    $('auth-error').classList.add('hidden-view');
-}
-
-// ==========================================
+}// ==========================================
 // NAVIGATION
 // ==========================================
 const SECTION_TITLES = {
-    'curriculum-section': 'Academic Curriculum',
-    'course-detail-section': 'Course',
-    'flashcards-section': 'Flashcards',
-    'quiz-section': 'Question Bank',
-    'review-section': 'Review Deck',
-    'notes-section': 'Study Notes',
-    'history-section': 'History of Radiography',
-    'library-section': 'Reference Library',
-    'scholarship-section': 'Scholarships & Grants',
-    'helper-section': 'Study Helper',
-    'leaderboard-section': 'Leaderboard'
+    'curriculum-section': 'Academic Curriculum', 'course-detail-section': 'Course',
+    'flashcards-section': 'Flashcards', 'quiz-section': 'Question Bank', 'review-section': 'Review Deck',
+    'notes-section': 'Study Notes', 'history-section': 'History of Radiography',
+    'library-section': 'Reference Library', 'scholarship-section': 'Scholarships & Grants',
+    'helper-section': 'Study Helper', 'leaderboard-section': 'Leaderboard', 'profile-section': 'My Profile'
 };
 
 function showSection(sectionId) {
-    document.querySelectorAll('.app-section').forEach(s => {
-        s.classList.remove('active-section');
-        s.classList.add('hidden-section');
-    });
+    document.querySelectorAll('.app-section').forEach(s => { s.classList.remove('active-section'); s.classList.add('hidden-section'); });
     const target = $(sectionId);
-    if (target) {
-        target.classList.remove('hidden-section');
-        target.classList.add('active-section');
-    }
+    if (target) { target.classList.remove('hidden-section'); target.classList.add('active-section'); }
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.target === sectionId));
     $('section-title').textContent = SECTION_TITLES[sectionId] || 'RadPrep';
     $('sidebar').classList.remove('open');
     $('sidebar-overlay').classList.remove('active');
     if (sectionId === 'review-section') renderReviewSection();
+    if (sectionId === 'profile-section') renderProfile();
 }
 
 function applyTheme(dark) {
@@ -371,42 +345,27 @@ function getOverallStats() {
 
 async function saveProgress(code, score, total) {
     if (!currentUser || !supabaseClient) return;
-    const existing = progressCache[code] || { attempts: 0, totalCorrect: 0, totalPossible: 0, best: 0, bestTotal: 0 };
-    existing.attempts++;
-    existing.totalCorrect += score;
-    existing.totalPossible += total;
-    if (score > existing.best || (score === existing.best && total > existing.bestTotal)) {
-        existing.best = score;
-        existing.bestTotal = total;
-    }
-    existing.lastDate = new Date().toISOString();
-    progressCache[code] = existing;
-
+    const p = progressCache[code] || { attempts: 0, totalCorrect: 0, totalPossible: 0, best: 0, bestTotal: 0 };
+    p.attempts++; p.totalCorrect += score; p.totalPossible += total;
+    if (score > p.best || (score === p.best && total > p.bestTotal)) { p.best = score; p.bestTotal = total; }
+    p.lastDate = new Date().toISOString();
+    progressCache[code] = p;
     try {
         await supabaseClient.from('user_progress').upsert({
-            user_id: currentUser.id,
-            course_code: code,
-            attempts: existing.attempts,
-            total_correct: existing.totalCorrect,
-            total_possible: existing.totalPossible,
-            best_score: existing.best,
-            best_total: existing.bestTotal,
-            last_date: existing.lastDate
+            user_id: currentUser.id, course_code: code,
+            attempts: p.attempts, total_correct: p.totalCorrect, total_possible: p.totalPossible,
+            best_score: p.best, best_total: p.bestTotal, last_date: p.lastDate
         }, { onConflict: 'user_id,course_code' });
-    } catch (err) { console.warn('Progress save failed:', err); }
+    } catch (err) { console.warn('saveProgress:', err); }
 }
 
 function renderOverallStats() {
     const el = $('overall-stats');
     if (!el) return;
-    const stats = getOverallStats();
-    if (stats.quizzes === 0) { el.classList.add('hidden-view'); return; }
+    const s = getOverallStats();
+    if (s.quizzes === 0) { el.classList.add('hidden-view'); return; }
     el.classList.remove('hidden-view');
-    el.innerHTML = `
-        <span>📊 <strong>${stats.quizzes}</strong> quiz${stats.quizzes !== 1 ? 'zes' : ''} taken</span>
-        <span>🎯 <strong>${stats.accuracy}%</strong> average accuracy</span>
-        <span>📚 <strong>${stats.courses}</strong> course${stats.courses !== 1 ? 's' : ''} attempted</span>
-    `;
+    el.innerHTML = `<span>📊 <strong>${s.quizzes}</strong> quiz${s.quizzes !== 1 ? 'zes' : ''} taken</span><span>🎯 <strong>${s.accuracy}%</strong> average accuracy</span><span>📚 <strong>${s.courses}</strong> course${s.courses !== 1 ? 's' : ''} attempted</span>`;
 }
 
 // ==========================================
@@ -414,73 +373,55 @@ function renderOverallStats() {
 // ==========================================
 async function addToReview(code, idx) {
     if (!currentUser || !supabaseClient) return;
-    const exists = reviewCache.some(item => item.code === code && item.idx === idx);
-    if (exists) return;
+    if (reviewCache.some(i => i.code === code && i.idx === idx)) return;
     reviewCache.push({ code, idx });
     renderReviewCount();
-    try {
-        await supabaseClient.from('review_deck').insert({ user_id: currentUser.id, course_code: code, question_index: idx });
-    } catch (err) { console.warn('Deck add failed:', err); }
+    try { await supabaseClient.from('review_deck').insert({ user_id: currentUser.id, course_code: code, question_index: idx }); }
+    catch (err) { console.warn('deck add:', err); }
 }
 
 async function removeFromReview(code, idx) {
     if (!currentUser || !supabaseClient) return;
-    reviewCache = reviewCache.filter(item => !(item.code === code && item.idx === idx));
+    reviewCache = reviewCache.filter(i => !(i.code === code && i.idx === idx));
     renderReviewCount();
-    try {
-        await supabaseClient.from('review_deck').delete().eq('user_id', currentUser.id).eq('course_code', code).eq('question_index', idx);
-    } catch (err) { console.warn('Deck remove failed:', err); }
+    try { await supabaseClient.from('review_deck').delete().eq('user_id', currentUser.id).eq('course_code', code).eq('question_index', idx); }
+    catch (err) { console.warn('deck remove:', err); }
 }
 
 async function clearReviewDeck() {
     if (!confirm('Clear all questions from your review deck?')) return;
     reviewCache = [];
-    renderReviewCount();
-    renderReviewSection();
-    try {
-        await supabaseClient.from('review_deck').delete().eq('user_id', currentUser.id);
-    } catch (err) { console.warn('Deck clear failed:', err); }
+    renderReviewCount(); renderReviewSection();
+    try { await supabaseClient.from('review_deck').delete().eq('user_id', currentUser.id); }
+    catch (err) { console.warn('deck clear:', err); }
 }
 
 function renderReviewCount() {
     const badge = $('review-count');
     if (!badge) return;
-    const count = reviewCache.length;
-    if (count > 0) { badge.textContent = count; badge.classList.remove('hidden-view'); }
+    if (reviewCache.length > 0) { badge.textContent = reviewCache.length; badge.classList.remove('hidden-view'); }
     else badge.classList.add('hidden-view');
 }
 
 function renderReviewSection() {
-    const summary = $('review-summary');
-    const actions = $('review-actions');
+    const summary = $('review-summary'), actions = $('review-actions');
     if (!summary || !actions) return;
-
     if (!reviewCache.length) {
         summary.innerHTML = `<h3>🎉 Your review deck is empty!</h3><p>Questions you answer wrong in any quiz will appear here automatically.</p>`;
-        actions.innerHTML = '';
-        return;
+        actions.innerHTML = ''; return;
     }
     const grouped = {};
-    reviewCache.forEach(item => { grouped[item.code] = (grouped[item.code] || 0) + 1; });
-    const breakdown = Object.entries(grouped).map(([code, count]) => `<strong>${code}</strong>: ${count}`).join(' · ');
+    reviewCache.forEach(i => { grouped[i.code] = (grouped[i.code] || 0) + 1; });
+    const breakdown = Object.entries(grouped).map(([c, n]) => `<strong>${c}</strong>: ${n}`).join(' · ');
     summary.innerHTML = `<h3>📚 ${reviewCache.length} question${reviewCache.length > 1 ? 's' : ''} to review</h3><p>${breakdown}</p>`;
-    actions.innerHTML = `
-        <button class="purple-btn" onclick="startReviewQuiz()">🎯 Start Review Session (${reviewCache.length})</button>
-        <button class="grey-btn" onclick="clearReviewDeck()">🗑️ Clear All</button>
-    `;
+    actions.innerHTML = `<button class="purple-btn" onclick="startReviewQuiz()">🎯 Start Review (${reviewCache.length})</button><button class="grey-btn" onclick="clearReviewDeck()">🗑️ Clear All</button>`;
 }
 
 function startReviewQuiz() {
     if (!reviewCache.length) { alert('Your review deck is empty!'); return; }
     const questions = [], sources = [];
-    reviewCache.forEach(item => {
-        const bank = quizBank[item.code];
-        if (bank && bank[item.idx]) {
-            questions.push(bank[item.idx]);
-            sources.push({ code: item.code, idx: item.idx });
-        }
-    });
-    if (!questions.length) { alert('No valid questions found.'); return; }
+    reviewCache.forEach(i => { const b = quizBank[i.code]; if (b && b[i.idx]) { questions.push(b[i.idx]); sources.push({ code: i.code, idx: i.idx }); } });
+    if (!questions.length) { alert('No valid questions.'); return; }
     for (let i = questions.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [questions[i], questions[j]] = [questions[j], questions[i]];
@@ -505,10 +446,7 @@ function renderCurriculum(level) {
     const courses = curriculumData[level] || [];
     container.innerHTML = '';
     renderOverallStats();
-    if (!courses.length) {
-        container.innerHTML = '<p style="color:var(--text-muted)">No courses for this level yet.</p>';
-        return;
-    }
+    if (!courses.length) { container.innerHTML = '<p style="color:var(--text-muted)">No courses for this level yet.</p>'; return; }
     courses.forEach(course => {
         const hasQuiz = !!quizBank[course.code];
         const prog = getCourseProgress(course.code);
@@ -527,8 +465,7 @@ function renderCurriculum(level) {
             <div class="course-actions">
                 <button class="primary-btn open-course-btn" data-code="${course.code}">View Course</button>
                 ${hasQuiz ? `<button class="purple-btn" data-quiz="${course.code}">Take Quiz</button>` : ''}
-            </div>
-        `;
+            </div>`;
         container.appendChild(card);
     });
     document.querySelectorAll('.open-course-btn').forEach(btn => btn.addEventListener('click', () => openCourseDetail(btn.dataset.code)));
@@ -566,8 +503,7 @@ function openCourseDetail(code) {
         <div class="detail-actions">
             ${hasQuiz ? `<button class="purple-btn" onclick="startQuiz('${course.code}')">📝 Take Quiz (${quizBank[code].length} questions)</button>` : '<button class="grey-btn" disabled>Quiz coming soon</button>'}
             <button class="primary-btn" onclick="showSection('notes-section')">📖 Study Notes</button>
-        </div>
-    `;
+        </div>`;
     showSection('course-detail-section');
     $('section-title').textContent = course.code + ' · ' + course.title;
 }
@@ -579,7 +515,7 @@ let quizState = { code: '', questions: [], sources: null, index: 0, score: 0, an
 
 function startQuiz(code) {
     const questions = quizBank[code];
-    if (!questions || !questions.length) { alert(`No questions available for ${code} yet.`); return; }
+    if (!questions || !questions.length) { alert(`No questions for ${code} yet.`); return; }
     quizState = { code, questions, sources: null, index: 0, score: 0, answered: false, answers: [], isReview: false };
     showSection('quiz-section');
     $('quiz-setup').classList.add('hidden-view');
@@ -597,16 +533,9 @@ function renderQuizQuestion() {
     $('quiz-question-text').textContent = q.q;
     $('quiz-explanation').classList.add('hidden-view');
     $('quiz-next-btn').classList.add('hidden-view');
-
-    const imgContainer = $('quiz-image-container');
-    if (q.img) {
-        imgContainer.innerHTML = `<img src="${q.img}" alt="Question image" onerror="this.style.display='none'">`;
-        imgContainer.classList.remove('hidden-view');
-    } else {
-        imgContainer.innerHTML = '';
-        imgContainer.classList.add('hidden-view');
-    }
-
+    const img = $('quiz-image-container');
+    if (q.img) { img.innerHTML = `<img src="${q.img}" alt="Question image" onerror="this.style.display='none'">`; img.classList.remove('hidden-view'); }
+    else { img.innerHTML = ''; img.classList.add('hidden-view'); }
     const box = $('quiz-options');
     box.innerHTML = '';
     q.o.forEach((option, i) => {
@@ -628,11 +557,7 @@ function answerQuiz(selected, btn) {
     if (correct) { btn.classList.add('correct'); quizState.score++; }
     else { btn.classList.add('wrong'); buttons[q.a].classList.add('correct'); }
     quizState.answers.push({ idx: quizState.index, correct });
-    if (q.why) {
-        const exp = $('quiz-explanation');
-        exp.innerHTML = `<strong>Explanation:</strong> ${q.why}`;
-        exp.classList.remove('hidden-view');
-    }
+    if (q.why) { const exp = $('quiz-explanation'); exp.innerHTML = `<strong>Explanation:</strong> ${q.why}`; exp.classList.remove('hidden-view'); }
     $('quiz-next-btn').classList.remove('hidden-view');
 }
 
@@ -642,20 +567,28 @@ function advanceQuiz() {
     else finishQuiz();
 }
 
+async function logQuizAttempt(code, score, total) {
+    if (!currentUser || !supabaseClient) return;
+    try {
+        await supabaseClient.from('quiz_attempts').insert({
+            user_id: currentUser.id, course_code: code, score, total
+        });
+    } catch (err) { console.warn('logAttempt:', err); }
+}
+
 async function finishQuiz() {
-    const { score, questions, answers, isReview } = quizState;
+    const { score, questions, answers, isReview, code } = quizState;
     $('quiz-active').classList.add('hidden-view');
     $('quiz-results').classList.remove('hidden-view');
-    $('quiz-score-display').textContent = `You scored ${score} out of ${questions.length} on ${isReview ? 'Review' : quizState.code}.`;
-
+    $('quiz-score-display').textContent = `You scored ${score} out of ${questions.length} on ${isReview ? 'Review' : code}.`;
     for (const ans of answers) {
-        const src = isReview ? quizState.sources[ans.idx] : { code: quizState.code, idx: ans.idx };
+        const src = isReview ? quizState.sources[ans.idx] : { code, idx: ans.idx };
         if (ans.correct) await removeFromReview(src.code, src.idx);
         else await addToReview(src.code, src.idx);
     }
-
     if (currentUser && !isReview) {
-        await saveProgress(quizState.code, score, questions.length);
+        await saveProgress(code, score, questions.length);
+        await logQuizAttempt(code, score, questions.length);
         const total = store.get('radprep_score', 0) + (score * 10);
         store.set('radprep_score', total);
         await submitScoreToSupabase(currentUser.username, currentUser.university, total, store.get('radprep_streak', 1));
@@ -675,7 +608,7 @@ async function submitScoreToSupabase(username, university, score, streak) {
         );
         if (error) throw error;
         return true;
-    } catch (err) { console.warn('Leaderboard submit failed:', err); return false; }
+    } catch (err) { console.warn('leaderboard submit:', err); return false; }
 }
 
 async function fetchLeaderboardFromSupabase(limit = 20) {
@@ -684,7 +617,7 @@ async function fetchLeaderboardFromSupabase(limit = 20) {
         const { data, error } = await supabaseClient.from('leaderboard').select('username, university, score, streak').order('score', { ascending: false }).limit(limit);
         if (error) throw error;
         return data;
-    } catch (err) { console.warn('Leaderboard fetch failed:', err); return null; }
+    } catch (err) { console.warn('leaderboard fetch:', err); return null; }
 }
 
 async function renderLeaderboard() {
@@ -698,7 +631,7 @@ async function renderLeaderboard() {
     }
     tbody.innerHTML = '';
     if (!rows.length) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-dim);padding:24px;">No scores yet — take a quiz!</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-dim);padding:24px;">No scores yet!</td></tr>';
         $('user-streak-count').textContent = '0';
         return;
     }
@@ -706,13 +639,7 @@ async function renderLeaderboard() {
     rows.forEach((row, i) => {
         const isMe = currentUser && row.username === currentUser.username;
         const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td class="rank-cell">${i + 1}</td>
-            <td>${row.username}${isMe ? ' <em>(you)</em>' : ''}</td>
-            <td>${row.university || '—'}</td>
-            <td>🔥 ${row.streak || 0}</td>
-            <td>${row.score || 0}</td>
-        `;
+        tr.innerHTML = `<td class="rank-cell">${i + 1}</td><td>${row.username}${isMe ? ' <em>(you)</em>' : ''}</td><td>${row.university || '—'}</td><td>🔥 ${row.streak || 0}</td><td>${row.score || 0}</td>`;
         if (isMe) tr.style.background = 'rgba(37, 99, 235, 0.08)';
         tbody.appendChild(tr);
     });
@@ -720,22 +647,20 @@ async function renderLeaderboard() {
 }
 
 // ==========================================
-// FLASHCARDS, NOTES, HISTORY, LIBRARY, SCHOLARSHIPS, HELPER
-// (unchanged from v3 — kept local-storage only)
+// FLASHCARDS
 // ==========================================
 const DEFAULT_CARDS = [
     { topic: 'Physics', q: 'What is the SI unit of absorbed radiation dose?', a: 'The Gray (Gy). 1 Gy = 1 J/kg of tissue.' },
-    { topic: 'Physics', q: 'State the ALARA principle.', a: 'As Low As Reasonably Achievable — exposures kept to minimum practical level.' },
+    { topic: 'Physics', q: 'State the ALARA principle.', a: 'As Low As Reasonably Achievable.' },
     { topic: 'Protection', q: 'Name three radiation protection principles.', a: 'Time, distance, and shielding.' },
     { topic: 'Physics', q: 'What does kVp control?', a: 'Beam quality (penetrability).' },
-    { topic: 'Physics', q: 'What does mAs control?', a: 'Beam quantity — the number of photons produced.' },
-    { topic: 'Procedures', q: 'Contrast used for a barium meal?', a: 'Barium sulphate suspension — inert, insoluble, coats mucosa.' },
+    { topic: 'Physics', q: 'What does mAs control?', a: 'Beam quantity — the number of photons.' },
+    { topic: 'Procedures', q: 'Contrast used for a barium meal?', a: 'Barium sulphate suspension.' },
     { topic: 'Anatomy', q: 'Which vertebral level corresponds to the xiphoid process?', a: 'Approximately T9–T10.' },
     { topic: 'Ultrasound', q: 'What does Doppler ultrasound measure?', a: 'Frequency shift from moving reflectors.' },
     { topic: 'Physics', q: 'State the inverse square law.', a: 'Intensity is proportional to 1/d².' },
     { topic: 'Protection', q: 'What is the annual public dose limit?', a: '1 mSv/year (ICRP).' }
 ];
-
 let flashcardDeck = [];
 let flashcardIndex = 0;
 
@@ -769,8 +694,11 @@ function renderFlashcard() {
     $('progress-bar').style.width = `${((flashcardIndex + 1) / deck.length) * 100}%`;
 }
 
+// ==========================================
+// NOTES / HISTORY / LIBRARY / SCHOLARSHIPS / HELPER
+// ==========================================
 const notesData = [
-    { title: 'Radiation Protection & ALARA', html: `<h3>Core Principles</h3><p>Justification, optimisation, and dose limitation.</p><h3>Time, Distance, Shielding</h3><p>Minimise time, maximise distance, use shielding.</p><div class="note-callout">💡 Doubling distance reduces dose to a quarter.</div><h3>ICRP Dose Limits</h3><p>Occupational: 20 mSv/year (5-yr avg). Public: 1 mSv/year.</p>` },
+    { title: 'Radiation Protection & ALARA', html: `<h3>Core Principles</h3><p>Justification, optimisation, and dose limitation.</p><h3>Time, Distance, Shielding</h3><p>Minimise time, maximise distance, use shielding.</p><div class="note-callout">💡 Doubling distance reduces dose to a quarter.</div>` },
     { title: 'X-Ray Production', html: `<h3>Bremsstrahlung</h3><p>Continuous spectrum from decelerating electrons.</p><h3>Characteristic</h3><p>Shell transitions emit fixed-energy photons.</p>` },
     { title: 'Image Quality', html: `<h3>Four Pillars</h3><p>Density, contrast, sharpness, distortion.</p>` },
     { title: 'Contrast Media', html: `<h3>Positive vs Negative</h3><p>Barium/iodine vs air/CO₂.</p><h3>Barium</h3><p>Contraindicated in suspected perforation.</p>` },
@@ -778,15 +706,14 @@ const notesData = [
     { title: 'MRI Basics', html: `<h3>T1 vs T2</h3><p>T1: fat bright. T2: fluid bright.</p><h3>Safety</h3><p>Ferromagnetic = absolute hazard.</p>` },
     { title: 'Ultrasound', html: `<h3>Piezoelectric</h3><p>Crystals convert electricity ↔ sound.</p>` }
 ];
-
 function renderNotesList() {
     const list = $('notes-list');
     if (!list) return;
     list.innerHTML = '';
-    notesData.forEach((note, i) => {
+    notesData.forEach((n, i) => {
         const btn = document.createElement('button');
         btn.className = 'note-item-btn';
-        btn.textContent = note.title;
+        btn.textContent = n.title;
         btn.addEventListener('click', () => openNote(i, btn));
         list.appendChild(btn);
     });
@@ -808,10 +735,10 @@ function renderHistory() {
     const c = $('history-timeline');
     if (!c) return;
     c.innerHTML = '';
-    historyData.forEach(item => {
+    historyData.forEach(i => {
         const div = document.createElement('div');
         div.className = 'timeline-item';
-        div.innerHTML = `<div class="timeline-date">${item.date}</div><h4>${item.title}</h4><p>${item.body}</p>`;
+        div.innerHTML = `<div class="timeline-date">${i.date}</div><h4>${i.title}</h4><p>${i.body}</p>`;
         c.appendChild(div);
     });
 }
@@ -828,10 +755,10 @@ function renderLibrary() {
     const c = $('library-grid');
     if (!c) return;
     c.innerHTML = '';
-    libraryData.forEach(item => {
+    libraryData.forEach(i => {
         const card = document.createElement('div');
         card.className = 'library-card';
-        card.innerHTML = `<h4>${item.title}</h4><p>${item.desc}</p><a href="${item.url}" target="_blank" rel="noopener noreferrer">Open Resource ↗</a>`;
+        card.innerHTML = `<h4>${i.title}</h4><p>${i.desc}</p><a href="${i.url}" target="_blank" rel="noopener noreferrer">Open Resource ↗</a>`;
         c.appendChild(card);
     });
 }
@@ -845,17 +772,11 @@ function renderScholarships() {
     if (!c) return;
     $('scholarship-checked').textContent = new Date().toLocaleDateString();
     c.innerHTML = '';
-    scholarshipData.forEach(item => {
-        const badge = item.status === 'Open' ? 'active-badge' : 'pending-badge';
+    scholarshipData.forEach(i => {
+        const badge = i.status === 'Open' ? 'active-badge' : 'pending-badge';
         const card = document.createElement('div');
         card.className = 'scholarship-card';
-        card.innerHTML = `
-            <div class="scholarship-header"><h4>${item.title}</h4><span class="status-badge ${badge}">${item.status}</span></div>
-            <p><strong>Eligibility:</strong> ${item.eligibility}</p>
-            <p><strong>Value:</strong> ${item.value}</p>
-            <p style="font-size:12px;color:var(--text-dim);">${item.note}</p>
-            <a href="${item.url}" target="_blank" rel="noopener noreferrer">Visit Portal ↗</a>
-        `;
+        card.innerHTML = `<div class="scholarship-header"><h4>${i.title}</h4><span class="status-badge ${badge}">${i.status}</span></div><p><strong>Eligibility:</strong> ${i.eligibility}</p><p><strong>Value:</strong> ${i.value}</p><p style="font-size:12px;color:var(--text-dim);">${i.note}</p><a href="${i.url}" target="_blank" rel="noopener noreferrer">Visit Portal ↗</a>`;
         c.appendChild(card);
     });
 }
@@ -885,6 +806,143 @@ function pushChat(text, isUser) {
 }
 
 // ==========================================
+// PROFILE
+// ==========================================
+function formatDate(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+async function renderProfile() {
+    if (!currentUser) return;
+    $('profile-username').textContent = currentUser.username;
+    $('profile-email').textContent = currentUser.email || '—';
+    $('profile-university').textContent = currentUser.university || '—';
+
+    try {
+        const { data } = await supabaseClient.from('profiles').select('created_at').eq('id', currentUser.id).maybeSingle();
+        $('profile-member-since').textContent = data?.created_at ? formatDate(data.created_at) : '—';
+    } catch (err) { $('profile-member-since').textContent = '—'; }
+
+    const savedAvatar = store.get('radprep_avatar_' + currentUser.username.toLowerCase(), null);
+    if (savedAvatar) $('profile-avatar-preview').src = savedAvatar;
+
+    const statsEl = $('profile-stats');
+    const s = getOverallStats();
+    if (s.quizzes === 0) {
+        statsEl.classList.add('hidden-view');
+    } else {
+        statsEl.classList.remove('hidden-view');
+        statsEl.innerHTML = `<span>📊 <strong>${s.quizzes}</strong> quiz${s.quizzes !== 1 ? 'zes' : ''} taken</span><span>🎯 <strong>${s.accuracy}%</strong> average accuracy</span><span>📚 <strong>${s.courses}</strong> course${s.courses !== 1 ? 's' : ''} attempted</span>`;
+    }
+
+    $('profile-activity').innerHTML = '<p style="color:var(--text-dim);">Loading…</p>';
+    try {
+        const { data, error } = await supabaseClient.from('quiz_attempts').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false }).limit(10);
+        if (error) throw error;
+        if (!data || !data.length) {
+            $('profile-activity').innerHTML = '<p style="color:var(--text-dim);">No quiz attempts yet. Take a quiz to see your progress!</p>';
+        } else {
+            $('profile-activity').innerHTML = data.map(a => `
+                <div class="activity-item">
+                    <span class="activity-course">${a.course_code}</span>
+                    <span class="activity-score">${a.score}/${a.total}</span>
+                    <span class="activity-date">${formatDate(a.created_at)}</span>
+                </div>
+            `).join('');
+        }
+    } catch (err) {
+        $('profile-activity').innerHTML = '<p style="color:var(--text-dim);">Could not load activity.</p>';
+    }
+
+    const courseEl = $('profile-courses');
+    const entries = Object.entries(progressCache);
+    if (!entries.length) {
+        courseEl.innerHTML = '<p style="color:var(--text-dim);">No courses attempted yet.</p>';
+    } else {
+        courseEl.innerHTML = entries.map(([code, p]) => {
+            const pct = p.bestTotal > 0 ? Math.round((p.best / p.bestTotal) * 100) : 0;
+            return `<div class="course-mini-row"><span class="course-mini-name">${code}</span><span class="course-mini-stats">Best ${p.best}/${p.bestTotal} (${pct}%) · ${p.attempts} attempt${p.attempts > 1 ? 's' : ''}</span></div>`;
+        }).join('');
+    }
+}
+
+function showPasswordMessage(msg, type) {
+    const el = $('password-message');
+    el.textContent = msg;
+    el.className = type;
+    el.classList.remove('hidden-view');
+}
+
+async function handleChangePassword() {
+    const oldPass = $('old-password').value;
+    const newPass = $('new-password').value;
+    const confirmPass = $('confirm-password').value;
+
+    if (!oldPass || !newPass || !confirmPass) return showPasswordMessage('Please fill in all three fields.', 'error');
+    if (newPass.length < 6) return showPasswordMessage('New password must be at least 6 characters.', 'error');
+    if (newPass !== confirmPass) return showPasswordMessage('New passwords do not match.', 'error');
+    if (newPass === oldPass) return showPasswordMessage('New password must be different from current.', 'error');
+
+    try {
+        const { error: verifyErr } = await supabaseClient.auth.signInWithPassword({
+            email: currentUser.email,
+            password: oldPass
+        });
+        if (verifyErr) return showPasswordMessage('Current password is incorrect.', 'error');
+
+        const { error } = await supabaseClient.auth.updateUser({ password: newPass });
+        if (error) throw error;
+
+        showPasswordMessage('✅ Password updated successfully!', 'success');
+        $('old-password').value = '';
+        $('new-password').value = '';
+        $('confirm-password').value = '';
+    } catch (err) {
+        showPasswordMessage(err.message || 'Password update failed.', 'error');
+    }
+}
+
+async function handleForgotPassword() {
+    if (!supabaseClient) return alert('Server not reachable.');
+    const username = prompt('Enter your username. We will send a reset link to the email on your account:');
+    if (!username) return;
+
+    const { data: email, error } = await supabaseClient.rpc('get_email_by_username', { p_username: username.trim() });
+    if (error) return alert('Error: ' + error.message);
+    if (!email) return alert('Username not found. Please check your spelling.');
+
+    const { error: resetErr } = await supabaseClient.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + window.location.pathname
+    });
+
+    if (resetErr) {
+        alert('Could not send reset email: ' + resetErr.message + '\n\n⚠️ Password reset emails require custom SMTP (Resend). If you don\'t receive an email, ask the admin to reset your password in Supabase Dashboard.');
+        return;
+    }
+
+    alert(`✅ Reset link sent to ${email}.\n\n⚠️ If no email arrives in 5 minutes, password reset emails require custom SMTP setup. Contact the admin.`);
+}
+
+function exportData() {
+    if (!currentUser) return;
+    const data = {
+        user: { username: currentUser.username, university: currentUser.university, email: currentUser.email },
+        progress: progressCache,
+        reviewDeck: reviewCache,
+        exportedAt: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `radprep-data-${currentUser.username}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// ==========================================
 // INIT
 // ==========================================
 document.addEventListener('DOMContentLoaded', async () => {
@@ -897,13 +955,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         $('disclaimer-modal').classList.add('hidden-view');
     });
 
-    // Auth form
     $('login-btn').addEventListener('click', handleAuthSubmit);
     $('auth-toggle-btn').addEventListener('click', toggleAuthMode);
     $('auth-password').addEventListener('keydown', (e) => { if (e.key === 'Enter') handleAuthSubmit(); });
+    $('forgot-password-link').addEventListener('click', (e) => { e.preventDefault(); handleForgotPassword(); });
     $('logout-btn').addEventListener('click', handleLogout);
 
-    // Sidebar
     $('menu-toggle').addEventListener('click', () => {
         $('sidebar').classList.toggle('open');
         $('sidebar-overlay').classList.toggle('active');
@@ -913,14 +970,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         $('sidebar-overlay').classList.remove('active');
     });
 
-    // Nav
     document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => showSection(btn.dataset.target)));
     document.querySelectorAll('[data-back]').forEach(btn => btn.addEventListener('click', () => showSection(btn.dataset.back)));
-
-    // Theme
     $('theme-btn').addEventListener('click', () => applyTheme(!document.body.classList.contains('dark-mode')));
 
-    // Level tabs
     document.querySelectorAll('.level-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active-level'));
@@ -929,7 +982,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // Flashcards
     $('flashcard').addEventListener('click', () => $('flashcard').classList.toggle('is-flipped'));
     $('flip-btn').addEventListener('click', () => $('flashcard').classList.toggle('is-flipped'));
     $('prev-btn').addEventListener('click', () => { flashcardIndex--; renderFlashcard(); });
@@ -937,8 +989,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('shuffle-btn').addEventListener('click', () => {
         flashcardDeck.sort(() => Math.random() - 0.5);
         store.set('radprep_cards', flashcardDeck);
-        flashcardIndex = 0;
-        renderFlashcard();
+        flashcardIndex = 0; renderFlashcard();
     });
     $('topic-filter').addEventListener('change', () => { flashcardIndex = 0; renderFlashcard(); });
     $('add-btn').addEventListener('click', () => {
@@ -948,23 +999,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!q || !a) return alert('Please fill in both question and answer.');
         flashcardDeck.push({ topic, q, a });
         store.set('radprep_cards', flashcardDeck);
-        $('new-question').value = '';
-        $('new-answer').value = '';
+        $('new-question').value = ''; $('new-answer').value = '';
         flashcardIndex = flashcardDeck.length - 1;
         renderFlashcard();
     });
 
-    // Quiz
     $('exit-quiz-btn').addEventListener('click', () => {
         $('quiz-active').classList.add('hidden-view');
         $('quiz-setup').classList.remove('hidden-view');
         showSection('curriculum-section');
     });
     $('quiz-next-btn').addEventListener('click', advanceQuiz);
-    $('retry-quiz-btn').addEventListener('click', () => {
-        if (quizState.isReview) startReviewQuiz();
-        else startQuiz(quizState.code);
-    });
+    $('retry-quiz-btn').addEventListener('click', () => { if (quizState.isReview) startReviewQuiz(); else startQuiz(quizState.code); });
     $('return-curriculum-btn').addEventListener('click', () => {
         $('quiz-results').classList.add('hidden-view');
         $('quiz-setup').classList.remove('hidden-view');
@@ -973,16 +1019,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         else showSection('curriculum-section');
     });
 
-    // Avatar
-    $('avatar-file-input').addEventListener('change', (e) => {
+    $('change-password-btn').addEventListener('click', handleChangePassword);
+    $('export-data-btn').addEventListener('click', exportData);
+    $('profile-avatar-input').addEventListener('change', (e) => {
         const file = e.target.files[0];
-        if (!file) return;
+        if (!file || !currentUser) return;
         const reader = new FileReader();
-        reader.onload = (ev) => { $('user-avatar-preview').src = ev.target.result; };
+        reader.onload = (ev) => {
+            $('profile-avatar-preview').src = ev.target.result;
+            $('user-avatar-preview').src = ev.target.result;
+            store.set('radprep_avatar_' + currentUser.username.toLowerCase(), ev.target.result);
+        };
         reader.readAsDataURL(file);
     });
 
-    // Helper chat
     function sendHelper() {
         const input = $('ai-chat-input');
         const text = input.value.trim();
@@ -994,34 +1044,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('ai-send-btn').addEventListener('click', sendHelper);
     $('ai-chat-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendHelper(); });
 
-    // ==========================================
-    // BOOTSTRAP AUTH
-    // ==========================================
     if (!supabaseClient) {
-        showAuthError('Backend not reachable. Please refresh the page.');
+        showAuthError('Backend not reachable. Please refresh.');
         return;
     }
 
-    // Listen for auth changes
     supabaseClient.auth.onAuthStateChange(async (event, session) => {
         console.log('Auth event:', event);
         if (event === 'SIGNED_IN' && session?.user) {
             await handleSignedIn(session.user);
         } else if (event === 'SIGNED_OUT') {
-            if (currentUser) handleLogout();
+            currentUser = null;
+            progressCache = {};
+            reviewCache = [];
+            $('app-container').classList.add('hidden-view');
+            // CRITICAL: remove the inline display:none so auth screen shows again
+            const authEl = $('auth-container');
+            if (authEl) authEl.style.removeProperty('display');
+            $('auth-password').value = '';
+            clearAuthError();
         }
     });
 
-    // Check existing session
     const { data } = await supabaseClient.auth.getSession();
-    if (data.session?.user) {
-        await handleSignedIn(data.session.user);
-    }
+    if (data.session?.user) await handleSignedIn(data.session.user);
 
-    // Service worker
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js')
-            .then(() => console.log('✅ SW registered'))
-            .catch(err => console.warn('SW failed:', err));
+        navigator.serviceWorker.register('sw.js').then(() => console.log('✅ SW registered')).catch(err => console.warn('SW failed:', err));
     }
 });

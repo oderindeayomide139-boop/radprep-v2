@@ -14,7 +14,7 @@
 <div id="disclaimer-modal" class="modal-overlay hidden-view">
     <div class="modal-card">
         <h2>⚠️ Before You Use RadPrep</h2>
-        <p>RadPrep is a <strong>student-built study aid</strong>. All content is for revision only and does not replace your lecturer, departmental notes, or the RRBN syllabus.</p>
+        <p>RadPrep is a <strong>student-built study aid</strong>. Content is for revision only and does not replace your lecturer or the RRBN syllabus.</p>
         <button id="disclaimer-accept" class="primary-btn">I understand — continue</button>
     </div>
 </div>
@@ -23,10 +23,9 @@
     <div class="auth-card">
         <h1 class="auth-logo">☢️ RadPrep</h1>
         <p id="auth-subtitle">Sign in to your account</p>
-
         <div id="auth-form">
-            <input type="text" id="auth-username" placeholder="Username (signup only)" class="hidden-view">
-            <input type="email" id="auth-email" placeholder="Email address" autocomplete="email">
+            <input type="text" id="auth-username" placeholder="Username" autocomplete="username">
+            <input type="email" id="auth-email" placeholder="Email address" autocomplete="email" class="hidden-view">
             <input type="password" id="auth-password" placeholder="Password (min 6 chars)" autocomplete="current-password">
             <select id="auth-university" class="hidden-view">
                 <option value="" disabled selected>Select Your University</option>
@@ -44,7 +43,7 @@
             <button id="login-btn" type="button">Sign In</button>
             <p id="auth-error" class="auth-error hidden-view"></p>
         </div>
-
+        <a href="#" id="forgot-password-link" style="display:block;text-align:center;margin-top:12px;font-size:13px;color:#2563eb;text-decoration:none;">Forgot password?</a>
         <p class="auth-toggle-text">
             <span id="auth-toggle-msg">Don't have an account?</span>
             <a href="#" id="auth-toggle-btn">Sign Up</a>
@@ -54,7 +53,6 @@
 
 <div id="app-container" class="hidden-view">
     <div id="sidebar-overlay" class="sidebar-overlay"></div>
-
     <aside class="sidebar" id="sidebar">
         <div class="logo">☢️ RadPrep</div>
         <div class="user-profile-badge"><span id="user-display-name">Student</span></div>
@@ -69,6 +67,7 @@
             <button class="nav-btn" data-target="scholarship-section">💰 Scholarships</button>
             <button class="nav-btn" data-target="helper-section">🤖 Study Helper</button>
             <button class="nav-btn" data-target="leaderboard-section">🏆 Leaderboard</button>
+            <button class="nav-btn" data-target="profile-section">👤 Profile</button>
         </nav>
         <button id="logout-btn">🚪 Log Out</button>
     </aside>
@@ -175,7 +174,7 @@
             <div class="info-container">
                 <div class="info-banner purple-banner">
                     <h3>🔁 Review Deck</h3>
-                    <p>Every question you got wrong is saved here. Get them right in a review session to remove them. <strong>Review sessions don't affect your leaderboard score.</strong></p>
+                    <p>Every question you got wrong is saved here. Get them right in a review session to remove them.</p>
                 </div>
                 <div id="review-summary" class="placeholder-box"></div>
                 <div class="review-actions" id="review-actions"></div>
@@ -190,7 +189,7 @@
                 </div>
                 <div class="notes-reader" id="notes-reader">
                     <h2 id="note-title">Select a topic to start reading</h2>
-                    <div id="note-content">Choose any topic from the left menu to view detailed notes, formulas, and clinical pearls.</div>
+                    <div id="note-content">Choose any topic from the left menu.</div>
                 </div>
             </div>
         </section>
@@ -199,7 +198,7 @@
             <div class="info-container">
                 <div class="info-banner blue-banner">
                     <h3>🏛️ History of Radiography</h3>
-                    <p>Global milestones and the Nigerian story — from Röntgen's discovery to modern practice.</p>
+                    <p>Global milestones and the Nigerian story.</p>
                 </div>
                 <div class="history-timeline" id="history-timeline"></div>
             </div>
@@ -209,7 +208,7 @@
             <div class="info-container">
                 <div class="info-banner green-banner">
                     <h3>📄 Free Reference Library</h3>
-                    <p>Curated open-access resources. All links point to legitimate, publicly available sources.</p>
+                    <p>Curated open-access resources.</p>
                 </div>
                 <div class="library-grid" id="library-grid"></div>
             </div>
@@ -219,7 +218,7 @@
             <div class="info-container">
                 <div class="info-banner green-banner">
                     <h3>💰 Scholarships & Grants</h3>
-                    <p>Always verify on the official portal before applying. Last checked: <span id="scholarship-checked"></span></p>
+                    <p>Verify on the official portal. Last checked: <span id="scholarship-checked"></span></p>
                 </div>
                 <div class="scholarship-list" id="scholarship-list"></div>
             </div>
@@ -233,9 +232,7 @@
                 </div>
                 <div class="ai-chat-container">
                     <div class="ai-chat-history" id="ai-chat-history">
-                        <div class="chat-message ai-msg">
-                            <strong>Helper:</strong> Ask me about ALARA, kVp, mAs, Hounsfield units, MRI, or ultrasound.
-                        </div>
+                        <div class="chat-message ai-msg"><strong>Helper:</strong> Ask about ALARA, kVp, mAs, Hounsfield, MRI, or ultrasound.</div>
                     </div>
                     <div class="ai-controls">
                         <input type="text" id="ai-chat-input" placeholder="Ask a question…">
@@ -254,7 +251,6 @@
                 <div class="my-stats-card">
                     <div class="avatar-upload-wrapper">
                         <img id="user-avatar-preview" src="https://api.iconify.design/lucide:user.svg?color=%232563eb" alt="Avatar">
-                        <input type="file" id="avatar-file-input" accept="image/*" title="Upload profile picture">
                     </div>
                     <div class="my-stats-info">
                         <h4 id="leaderboard-username-display">Student</h4>
@@ -264,11 +260,56 @@
                 </div>
                 <div class="leaderboard-table-wrapper">
                     <table class="leaderboard-table">
-                        <thead>
-                            <tr><th>Rank</th><th>Student</th><th>University</th><th>Streak</th><th>Score</th></tr>
-                        </thead>
+                        <thead><tr><th>Rank</th><th>Student</th><th>University</th><th>Streak</th><th>Score</th></tr></thead>
                         <tbody id="leaderboard-tbody"></tbody>
                     </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="profile-section" class="app-section hidden-section">
+            <div class="info-container">
+                <div class="profile-header-card">
+                    <div class="profile-avatar-wrapper">
+                        <img id="profile-avatar-preview" src="https://api.iconify.design/lucide:user.svg?color=%232563eb" alt="Avatar">
+                        <input type="file" id="profile-avatar-input" accept="image/*" title="Upload profile picture">
+                    </div>
+                    <div class="profile-info">
+                        <h2 id="profile-username">Username</h2>
+                        <p><strong>Email:</strong> <span id="profile-email">—</span></p>
+                        <p><strong>University:</strong> <span id="profile-university">—</span></p>
+                        <p><strong>Member since:</strong> <span id="profile-member-since">—</span></p>
+                    </div>
+                </div>
+
+                <div id="profile-stats" class="overall-stats"></div>
+
+                <div class="profile-two-col">
+                    <div class="profile-card">
+                        <h3>📈 Recent Activity</h3>
+                        <div id="profile-activity"><p style="color:var(--text-dim);">Loading…</p></div>
+                    </div>
+                    <div class="profile-card">
+                        <h3>📊 Per-Course Progress</h3>
+                        <div id="profile-courses"><p style="color:var(--text-dim);">Loading…</p></div>
+                    </div>
+                </div>
+
+                <div class="profile-card">
+                    <h3>🔐 Change Password</h3>
+                    <div class="password-form">
+                        <input type="password" id="old-password" placeholder="Current password" autocomplete="current-password">
+                        <input type="password" id="new-password" placeholder="New password (min 6 chars)" autocomplete="new-password">
+                        <input type="password" id="confirm-password" placeholder="Confirm new password" autocomplete="new-password">
+                        <button id="change-password-btn" class="primary-btn">Update Password</button>
+                        <p id="password-message" class="hidden-view"></p>
+                    </div>
+                </div>
+
+                <div class="profile-card">
+                    <h3>📦 Export Your Data</h3>
+                    <p>Download all your progress as a JSON file.</p>
+                    <button id="export-data-btn" class="green-btn" style="margin-top:10px;">Download My Data</button>
                 </div>
             </div>
         </section>

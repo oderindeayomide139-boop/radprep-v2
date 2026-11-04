@@ -1,4 +1,4 @@
-const CACHE_NAME = 'radprep-v5';
+const CACHE_NAME = 'radprep-v8';
 const ASSETS = ['./', './index.html', './style.css', './script.js', './manifest.json'];
 
 self.addEventListener('install', (e) => {
@@ -16,7 +16,6 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-    // Network-first for HTML navigation (so updates appear immediately)
     if (e.request.mode === 'navigate') {
         e.respondWith(
             fetch(e.request)
@@ -29,6 +28,5 @@ self.addEventListener('fetch', (e) => {
         );
         return;
     }
-    // Cache-first for other assets
     e.respondWith(caches.match(e.request).then((c) => c || fetch(e.request)));
 });
