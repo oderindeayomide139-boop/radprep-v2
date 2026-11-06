@@ -1,8 +1,7 @@
 // ==========================================
-// RadPrep v8 — Questions from Supabase DB
-// quizBank is a fallback only (Supabase is source of truth)
+// RadPrep v11 — Level lock + Supabase PDF library
 // ==========================================
-console.log("🔥 RadPrep v8 loaded");
+console.log("🔥 RadPrep v11 loaded");
 
 const SUPABASE_URL = 'https://puqxlbtdkajzlxgbtsnx.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_wibge1aU64UKmHdchdkywA_jmZ2SNMp';
@@ -27,9 +26,8 @@ let authMode = 'login';
 let activeLevel = '300L';
 let activeCourseCode = null;
 let progressCache = {};
-let reviewCache = {};
-reviewCache = [];
-let questionsFromDB = {};  // Populated from Supabase on login
+let reviewCache = [];
+let questionsFromDB = {};
 
 // ==========================================
 // CURRICULUM
@@ -73,7 +71,7 @@ const curriculumData = {
 };
 
 // ==========================================
-// FALLBACK question bank (used only if Supabase fails)
+// FALLBACK question bank
 // ==========================================
 const quizBank = {
     "PHY 101": [
@@ -91,17 +89,12 @@ const quizBank = {
         { q: "The SI unit of equivalent dose is the:", o: ["Gray", "Becquerel", "Sievert", "Coulomb/kg"], a: 2, why: "Equivalent dose is measured in sieverts (Sv)." },
         { q: "The inverse square law states intensity is proportional to:", o: ["1/d", "1/d²", "d²", "d"], a: 1, why: "Intensity falls off as the square of distance." },
         { q: "The standard anode material in a diagnostic X-ray tube is:", o: ["Copper", "Tungsten", "Aluminium", "Molybdenum"], a: 1, why: "Tungsten has high atomic number and melting point." },
-        { q: "Increasing kVp primarily affects the beam by:", o: ["Raising quantity and quality", "Lowering quality only", "Only raising quantity", "No effect"], a: 0, why: "Higher kVp increases photon energy and number." },
-        { q: "Which of these is NOT a cardinal radiation protection principle?", o: ["Time", "Distance", "Shielding", "Amplification"], a: 3, why: "The three pillars are time, distance, and shielding." },
-        { q: "Characteristic X-rays are produced when:", o: ["Electrons decelerate in the nucleus field", "An outer-shell electron fills an inner-shell vacancy", "Two photons collide", "A nucleus splits"], a: 1, why: "Shell transitions produce photons of fixed energy." },
-        { q: "The annual occupational dose limit (ICRP, averaged) is:", o: ["1 mSv", "5 mSv", "20 mSv", "100 mSv"], a: 2, why: "ICRP recommends 20 mSv per year averaged over 5 years." },
-        { q: "Filtration of the X-ray beam primarily:", o: ["Increases low-energy photons", "Removes low-energy photons", "Increases contrast", "Raises tube current"], a: 1, why: "Filtration removes low-energy photons that add only patient dose." },
-        { q: "The photoelectric effect is most likely in:", o: ["Soft tissue at high kVp", "Bone at low kVp", "Air at any kVp", "Fat at any kVp"], a: 1, why: "Photoelectric absorption rises with atomic number and falls with photon energy." }
+        { q: "Increasing kVp primarily affects the beam by:", o: ["Raising quantity and quality", "Lowering quality only", "Only raising quantity", "No effect"], a: 0, why: "Higher kVp increases photon energy and number." }
     ]
 };
 
 // ==========================================
-// QUESTION LOADER — DB first, fallback to quizBank
+// QUESTION LOADER
 // ==========================================
 async function loadQuestionsFromDB() {
     if (!supabaseClient) return;
@@ -162,6 +155,7 @@ function toggleAuthMode(e) {
     $('auth-username').classList.remove('hidden-view');
     $('auth-email').classList.toggle('hidden-view', !isSignup);
     $('auth-university').classList.toggle('hidden-view', !isSignup);
+    $('auth-level').classList.toggle('hidden-view', !isSignup);
     $('auth-subtitle').textContent = isSignup ? 'Create your student account' : 'Sign in to your account';
     $('login-btn').textContent = isSignup ? 'Create Account' : 'Sign In';
     $('auth-toggle-msg').textContent = isSignup ? 'Already have an account?' : "Don't have an account?";
@@ -181,14 +175,16 @@ async function handleAuthSubmit() {
     if (authMode === 'signup') {
         const email = ($('auth-email').value || '').trim();
         const university = $('auth-university').value;
+        const level = $('auth-level').value;
         if (!email || !email.includes('@')) return showAuthError('Please enter a valid email address.');
         if (!university) return showAuthError('Please select your university.');
+        if (!level) return showAuthError('Please select your level.');
 
         setAuthButtonLoading(true);
         try {
             const { data, error } = await supabaseClient.auth.signUp({
                 email, password,
-                options: { data: { username, university, email } }
+                options: { data: { username, university, email, level } }
             });
             if (error) throw error;
             if (!data.session) {
@@ -230,7 +226,8 @@ async function ensureProfile(user) {
                 id: user.id,
                 username: user.user_metadata?.username || user.email.split('@')[0],
                 university: user.user_metadata?.university || 'Other',
-                email: user.email
+                email: user.email,
+                level: user.user_metadata?.level || '300L'
             });
         }
     } catch (err) { console.warn('ensureProfile:', err); }
@@ -260,10 +257,12 @@ async function handleSignedIn(user) {
     if (currentUser && currentUser.id === user.id) return;
     const username = user.user_metadata?.username || user.email.split('@')[0];
     const university = user.user_metadata?.university || 'Other';
-    currentUser = { id: user.id, username, university, email: user.email };
+    const level = user.user_metadata?.level || '300L';
+    currentUser = { id: user.id, username, university, email: user.email, level };
+    activeLevel = level;
     await ensureProfile(user);
     await loadUserData(user);
-    await loadQuestionsFromDB();   // ← load questions BEFORE rendering
+    await loadQuestionsFromDB();
     enterApp();
 }
 
@@ -275,6 +274,15 @@ function enterApp() {
     $('leaderboard-username-display').textContent = currentUser.username;
     $('leaderboard-uni-display').textContent = 'University: ' + currentUser.university;
     setAuthButtonLoading(false);
+
+    // LOCK LEVEL: hide all level tabs except the student's registered level
+    document.querySelectorAll('.level-btn').forEach(btn => {
+        const isUsersLevel = btn.dataset.level === currentUser.level;
+        btn.style.display = isUsersLevel ? '' : 'none';
+        btn.classList.toggle('active-level', isUsersLevel);
+    });
+
+    activeLevel = currentUser.level;
     renderCurriculum(activeLevel);
     renderFlashcard();
     renderNotesList();
@@ -310,6 +318,7 @@ function showSection(sectionId) {
     $('sidebar-overlay').classList.remove('active');
     if (sectionId === 'review-section') renderReviewSection();
     if (sectionId === 'profile-section') renderProfile();
+    if (sectionId === 'library-section') renderLibrary();
 }
 
 function applyTheme(dark) {
@@ -753,16 +762,49 @@ const libraryData = [
     { title: "MIT OpenCourseWare", desc: "Medical imaging lectures.", url: "https://ocw.mit.edu/search/?q=medical+imaging" },
     { title: "OpenStax Anatomy", desc: "Free peer-reviewed anatomy textbook.", url: "https://openstax.org/details/books/anatomy-and-physiology-2e" }
 ];
-function renderLibrary() {
+
+async function renderLibrary() {
     const c = $('library-grid');
     if (!c) return;
-    c.innerHTML = '';
-    libraryData.forEach(i => {
-        const card = document.createElement('div');
-        card.className = 'library-card';
-        card.innerHTML = `<h4>${i.title}</h4><p>${i.desc}</p><a href="${i.url}" target="_blank" rel="noopener noreferrer">Open Resource ↗</a>`;
-        c.appendChild(card);
-    });
+    c.innerHTML = '<p style="color:var(--text-dim);grid-column:1/-1;">Loading materials…</p>';
+
+    const externalHTML = libraryData.map(i =>
+        `<div class="library-card"><h4>${i.title}</h4><p>${i.desc}</p><a href="${i.url}" target="_blank" rel="noopener noreferrer">Open Resource ↗</a></div>`
+    ).join('');
+
+    let pdfSection = '';
+    try {
+        const { data, error } = await supabaseClient
+            .from('library_materials')
+            .select('*')
+            .eq('level', currentUser ? currentUser.level : '300L')
+            .order('course_code', { ascending: true });
+        if (error) throw error;
+
+        if (!data || !data.length) {
+            pdfSection = `<div class="library-empty" style="grid-column:1/-1;">
+                <h4>📚 No course materials yet for ${currentUser ? currentUser.level : 'your level'}</h4>
+                <p>Lecture materials will appear here when your department uploads them.</p>
+            </div>`;
+        } else {
+            pdfSection = data.map(row => {
+                const url = supabaseClient.storage.from('Library').getPublicUrl(row.file_path).data.publicUrl;
+                return `<div class="library-card">
+                    <div style="font-size:40px;">📄</div>
+                    <h4>${row.title}</h4>
+                    <p style="font-size:12px;color:var(--text-dim);">${row.course_code}${row.description ? ' · ' + row.description : ''}</p>
+                    <a href="${url}" target="_blank" rel="noopener noreferrer" download>Open Material ↗</a>
+                </div>`;
+            }).join('');
+        }
+    } catch (err) {
+        console.warn('Library load failed:', err);
+        pdfSection = `<p style="color:var(--text-dim);grid-column:1/-1;">Could not load materials. Please try again.</p>`;
+    }
+
+    c.innerHTML = pdfSection +
+        `<h3 style="grid-column:1/-1;margin:24px 0 0;color:var(--text);font-size:16px;">External Resources</h3>` +
+        externalHTML;
 }
 
 const scholarshipData = [
@@ -821,6 +863,7 @@ async function renderProfile() {
     $('profile-username').textContent = currentUser.username;
     $('profile-email').textContent = currentUser.email || '—';
     $('profile-university').textContent = currentUser.university || '—';
+    $('profile-level').textContent = currentUser.level || '—';
 
     try {
         const { data } = await supabaseClient.from('profiles').select('created_at').eq('id', currentUser.id).maybeSingle();
@@ -930,7 +973,7 @@ async function handleForgotPassword() {
 function exportData() {
     if (!currentUser) return;
     const data = {
-        user: { username: currentUser.username, university: currentUser.university, email: currentUser.email },
+        user: { username: currentUser.username, university: currentUser.university, email: currentUser.email, level: currentUser.level },
         progress: progressCache,
         reviewDeck: reviewCache,
         exportedAt: new Date().toISOString()
@@ -976,8 +1019,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.querySelectorAll('[data-back]').forEach(btn => btn.addEventListener('click', () => showSection(btn.dataset.back)));
     $('theme-btn').addEventListener('click', () => applyTheme(!document.body.classList.contains('dark-mode')));
 
+    // Level tabs are locked to the student's registered level
     document.querySelectorAll('.level-btn').forEach(btn => {
         btn.addEventListener('click', () => {
+            if (!currentUser) return;
+            if (btn.dataset.level !== currentUser.level) return;
             document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active-level'));
             btn.classList.add('active-level');
             renderCurriculum(btn.dataset.level);
@@ -1065,6 +1111,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (authEl) authEl.style.removeProperty('display');
             $('auth-password').value = '';
             clearAuthError();
+            document.querySelectorAll('.level-btn').forEach(btn => {
+                btn.style.display = '';
+                btn.classList.remove('active-level');
+            });
         }
     });
 

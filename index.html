@@ -40,6 +40,14 @@
                 <option value="EBSU">Ebonyi State University (EBSU)</option>
                 <option value="Other">Other</option>
             </select>
+            <select id="auth-level" class="hidden-view">
+                <option value="" disabled selected>Select Your Level</option>
+                <option value="100L">100 Level</option>
+                <option value="200L">200 Level</option>
+                <option value="300L">300 Level</option>
+                <option value="400L">400 Level</option>
+                <option value="500L">500 Level</option>
+            </select>
             <button id="login-btn" type="button">Sign In</button>
             <p id="auth-error" class="auth-error hidden-view"></p>
         </div>
@@ -278,6 +286,7 @@
                         <h2 id="profile-username">Username</h2>
                         <p><strong>Email:</strong> <span id="profile-email">—</span></p>
                         <p><strong>University:</strong> <span id="profile-university">—</span></p>
+                        <p><strong>Level:</strong> <span id="profile-level">—</span></p>
                         <p><strong>Member since:</strong> <span id="profile-member-since">—</span></p>
                     </div>
                 </div>
