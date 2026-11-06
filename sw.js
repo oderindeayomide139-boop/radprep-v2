@@ -1,4 +1,4 @@
-const CACHE_NAME = 'radprep-v8';
+const CACHE_NAME = 'radprep-v9';
 const ASSETS = ['./', './index.html', './style.css', './script.js', './manifest.json'];
 
 self.addEventListener('install', (e) => {

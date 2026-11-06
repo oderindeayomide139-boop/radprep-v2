@@ -1,7 +1,8 @@
 // ==========================================
-// RadPrep v7 — Clean build with bulletproof auth hiding
+// RadPrep v8 — Questions from Supabase DB
+// quizBank is a fallback only (Supabase is source of truth)
 // ==========================================
-console.log("🔥 RadPrep v7 loaded");
+console.log("🔥 RadPrep v8 loaded");
 
 const SUPABASE_URL = 'https://puqxlbtdkajzlxgbtsnx.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_wibge1aU64UKmHdchdkywA_jmZ2SNMp';
@@ -26,7 +27,9 @@ let authMode = 'login';
 let activeLevel = '300L';
 let activeCourseCode = null;
 let progressCache = {};
-let reviewCache = [];
+let reviewCache = {};
+reviewCache = [];
+let questionsFromDB = {};  // Populated from Supabase on login
 
 // ==========================================
 // CURRICULUM
@@ -70,7 +73,7 @@ const curriculumData = {
 };
 
 // ==========================================
-// QUESTION BANK
+// FALLBACK question bank (used only if Supabase fails)
 // ==========================================
 const quizBank = {
     "PHY 101": [
@@ -84,7 +87,7 @@ const quizBank = {
         { q: "Isotopes of an element differ in:", o: ["Protons", "Electrons", "Neutrons", "Charge"], a: 2, why: "Isotopes differ in neutron count." }
     ],
     "RDG 301": [
-        { q: "Which interaction predominates in soft tissue at diagnostic energies?", o: ["Photoelectric effect", "Compton scattering", "Pair production", "Coherent scattering"], a: 1, why: "Compton scattering dominates in soft tissue between 30–150 keV." },
+        { q: "Which interaction predominates in soft tissue at diagnostic energies?", o: ["Photoelectric effect", "Compton scattering", "Pair production", "Coherent scattering"], a: 1, why: "Compton scattering dominates in soft tissue between 30-150 keV." },
         { q: "The SI unit of equivalent dose is the:", o: ["Gray", "Becquerel", "Sievert", "Coulomb/kg"], a: 2, why: "Equivalent dose is measured in sieverts (Sv)." },
         { q: "The inverse square law states intensity is proportional to:", o: ["1/d", "1/d²", "d²", "d"], a: 1, why: "Intensity falls off as the square of distance." },
         { q: "The standard anode material in a diagnostic X-ray tube is:", o: ["Copper", "Tungsten", "Aluminium", "Molybdenum"], a: 1, why: "Tungsten has high atomic number and melting point." },
@@ -94,68 +97,51 @@ const quizBank = {
         { q: "The annual occupational dose limit (ICRP, averaged) is:", o: ["1 mSv", "5 mSv", "20 mSv", "100 mSv"], a: 2, why: "ICRP recommends 20 mSv per year averaged over 5 years." },
         { q: "Filtration of the X-ray beam primarily:", o: ["Increases low-energy photons", "Removes low-energy photons", "Increases contrast", "Raises tube current"], a: 1, why: "Filtration removes low-energy photons that add only patient dose." },
         { q: "The photoelectric effect is most likely in:", o: ["Soft tissue at high kVp", "Bone at low kVp", "Air at any kVp", "Fat at any kVp"], a: 1, why: "Photoelectric absorption rises with atomic number and falls with photon energy." }
-    ],
-    "RDG 303": [
-        { q: "The PA chest projection is taken at what standard SID?", o: ["100 cm", "150 cm", "180 cm", "200 cm"], a: 2, why: "180 cm SID reduces heart magnification." },
-        { q: "Which view best demonstrates the acromioclavicular joint?", o: ["AP shoulder", "PA oblique with weights", "Axial shoulder", "Scapular Y"], a: 1, why: "Weighted PA view stresses the AC joint." },
-        { q: "The occipitomental (Water's) view demonstrates the:", o: ["Mandible", "Facial bones and sinuses", "Cervical spine", "TMJ"], a: 1, why: "Water's view is standard for facial bones." },
-        { q: "A right lateral decubitus abdomen is used to detect:", o: ["Free air", "Renal stones", "Bowel obstruction only", "Gallstones only"], a: 0, why: "Free air rises to the uppermost side." },
-        { q: "The standard centring point for an AP knee is:", o: ["Patella", "1 cm distal to apex of patella", "Tibial tuberosity", "Femoral condyles"], a: 1, why: "Centring below the patellar apex aligns the joint." },
-        { q: "The Scapular Y view primarily assesses:", o: ["Glenohumeral alignment", "Clavicle fracture", "AC joint", "Elbow"], a: 0, why: "The Y view shows the humeral head relative to the scapular Y." },
-        { q: "Which projection best demonstrates the cervical spine's intervertebral foramina?", o: ["AP", "Lateral", "Oblique", "PA"], a: 2, why: "Oblique views open the intervertebral foramina." },
-        { q: "A KUB radiograph covers which region?", o: ["Chest only", "Kidneys, ureters, bladder", "Skull", "Ankle"], a: 1, why: "KUB = kidneys, ureters, bladder." }
-    ],
-    "RDG 305": [
-        { q: "The standard wrist PA projection is centred on the:", o: ["Radial styloid", "Mid-carpal region", "Ulnar styloid", "Base of 3rd metacarpal"], a: 1, why: "Centring on mid-carpal includes all carpal bones." },
-        { q: "Which view is used to demonstrate the ankle mortise?", o: ["AP", "Lateral", "15° internal oblique", "Axial"], a: 2, why: "15° internal rotation shows the joint space." },
-        { q: "For a lateral lumbar spine, the patient is positioned:", o: ["Supine", "Lateral decubitus", "Standing or lateral recumbent", "Prone"], a: 2, why: "Standing/lateral recumbent best demonstrate disc spaces." },
-        { q: "The AP foot projection is taken with the central ray angled:", o: ["0°", "15° cephalad", "15° caudad", "30° caudad"], a: 1, why: "15° cephalad opens the tarsometatarsal spaces." },
-        { q: "A PA hand radiograph is performed with the hand:", o: ["Clenched", "Pronated flat on cassette", "Supinated", "In a fist"], a: 1, why: "Flat pronation keeps fingers parallel to the receptor." },
-        { q: "The centring point for a lateral chest radiograph is:", o: ["Mid-sternum", "Mid-axillary line at T7", "Xiphisternum", "C7"], a: 1, why: "Mid-axillary at T7 includes both lungs." },
-        { q: "Which immobilisation aid is used for a paediatric chest X-ray?", o: ["Sandbag", "Pigg-O-Stat", "Head clamp", "Compression band"], a: 1, why: "The Pigg-O-Stat holds infants upright and still." },
-        { q: "For an AP mobile chest radiograph, the cassette is placed:", o: ["Behind the patient", "In front of the patient", "At the side", "Under the stretcher"], a: 0, why: "AP projection places the detector behind the patient." }
-    ],
-    "RDG 401": [
-        { q: "The standard contrast medium for a barium meal is:", o: ["Iodine solution", "Barium sulphate suspension", "Air", "Saline"], a: 1, why: "Barium sulphate is inert, insoluble, and coats mucosa." },
-        { q: "Barium studies are contraindicated when:", o: ["The patient is fasting", "Bowel perforation is suspected", "The patient is over 50", "The patient has diabetes"], a: 1, why: "Barium leaking into peritoneum causes peritonitis." },
-        { q: "In an IVU, contrast is administered:", o: ["Orally", "Rectally", "Intravenously", "Intramuscularly"], a: 2, why: "IVU requires intravenous contrast." },
-        { q: "HSG primarily evaluates the:", o: ["Uterus and fallopian tubes", "Bladder", "Kidneys", "Liver"], a: 0, why: "HSG visualises the uterine cavity and tubal patency." },
-        { q: "Which contrast agent is used when performing a barium enema?", o: ["Barium sulphate", "Gadolinium", "CO₂", "Normal saline"], a: 0, why: "Barium sulphate is used rectally for double-contrast studies." },
-        { q: "Before IV contrast administration, a key check is:", o: ["Blood group", "Renal function and allergy history", "Visual acuity", "Hair colour"], a: 1, why: "Renal impairment and prior reactions increase risk." }
-    ],
-    "RDG 403": [
-        { q: "Hounsfield units (HU) for water are:", o: ["-1000", "0", "+1000", "+3000"], a: 1, why: "Water is the reference point of the HU scale." },
-        { q: "Quantum mottle on a CT image is most associated with:", o: ["Low mAs", "High kVp", "High mAs", "Short exposure time only"], a: 0, why: "Insufficient photons produce noisy images." },
-        { q: "Which of these is a CT artifact from patient motion?", o: ["Streak artifact", "Motion blur", "Partial volume", "Ring artifact"], a: 1, why: "Movement blurs the reconstructed image." },
-        { q: "Helical CT differs from conventional CT by:", o: ["Continuous table movement", "Slower acquisition", "No X-rays used", "Different contrast"], a: 0, why: "Helical CT scans continuously while the table moves." },
-        { q: "The HU of dense cortical bone is approximately:", o: ["0", "+100", "+1000 or higher", "-1000"], a: 2, why: "Cortical bone measures around +1000 HU." }
-    ],
-    "RDG 405": [
-        { q: "The piezoelectric effect in ultrasound refers to:", o: ["Conversion of electrical to mechanical energy", "Absorption of sound", "Reflection at boundaries", "Beam focusing"], a: 0, why: "Piezoelectric crystals convert electrical pulses to sound." },
-        { q: "The Doppler effect in ultrasound measures:", o: ["Tissue density", "Frequency shift from moving reflectors", "Beam width", "Attenuation"], a: 1, why: "Blood flow causes a frequency shift." },
-        { q: "Higher frequency transducers provide:", o: ["Better resolution but less penetration", "Better penetration but less resolution", "No change", "More heat"], a: 0, why: "Higher frequency = better detail, shallower depth." },
-        { q: "A first-trimester obstetric scan typically uses a:", o: ["Linear probe", "Curvilinear or transvaginal probe", "Phased array", "Continuous wave probe"], a: 1, why: "Curvilinear/transvaginal provides optimal field of view." }
-    ],
-    "RDG 407": [
-        { q: "The Larmor frequency depends on:", o: ["Patient weight", "Field strength and gyromagnetic ratio", "Coil type", "Room temperature"], a: 1, why: "Larmor frequency = γ × B0." },
-        { q: "On a T1-weighted image, fat appears:", o: ["Dark", "Bright", "Grey", "Invisible"], a: 1, why: "Fat has a short T1 relaxation time." },
-        { q: "On a T2-weighted image, fluid appears:", o: ["Dark", "Bright", "Grey", "Invisible"], a: 1, why: "Fluid has a long T2 relaxation time." },
-        { q: "The main safety concern of the MRI scanner is:", o: ["Radiation dose", "Ferromagnetic projectiles and implants", "Noise only", "Heat only"], a: 1, why: "The strong magnetic field attracts ferromagnetic objects." },
-        { q: "Gadolinium contrast is used in MRI to:", o: ["Shorten T1 relaxation", "Lengthen T2 relaxation", "Enhance X-ray contrast", "Reduce noise"], a: 0, why: "Gadolinium shortens T1 relaxation time." }
-    ],
-    "RDG 501": [
-        { q: "Radiotherapy primarily kills tumour cells by:", o: ["Direct DNA damage and indirect free-radical damage", "Reducing blood flow", "Mechanical disruption", "Lowering temperature"], a: 0, why: "Ionizing radiation damages DNA directly and via free radicals." },
-        { q: "The therapeutic ratio is the balance between:", o: ["Dose and cost", "Tumour control and normal tissue damage", "Beam energy and depth", "Time and distance"], a: 1, why: "Higher therapeutic ratio = better." },
-        { q: "A common side effect of pelvic radiotherapy is:", o: ["Hair loss only", "Radiation cystitis or proctitis", "Blindness", "Hearing loss"], a: 1, why: "Pelvic irradiation can inflame bladder and rectum." }
-    ],
-    "RDG 505": [
-        { q: "A radiograph shows poor contrast and high density. Most likely cause?", o: ["Under-exposure", "Over-exposure", "Excessive collimation", "Low kVp"], a: 1, why: "Over-exposure produces high density and reduces contrast." },
-        { q: "Which artifact is caused by patient motion?", o: ["Grid cut-off", "Blur / unsharpness", "Backscatter fog", "Chemical fog"], a: 1, why: "Movement during exposure produces motion blur." },
-        { q: "A Mach band is an example of:", o: ["Grid error", "Physiological/optical edge enhancement", "Processing fault", "Detector fault"], a: 1, why: "Mach bands are optical edge effects." },
-        { q: "Grid cut-off is typically caused by:", o: ["Wrong SID or angulation", "Patient movement", "Film fog", "Low mAs"], a: 0, why: "Grids must be used within their focal range at the correct SID." },
-        { q: "A repeat radiograph because of rotation is best prevented by:", o: ["Increasing kVp", "Checking patient positioning before exposure", "Using smaller film", "Reducing SID"], a: 1, why: "Pre-exposure positioning checks prevent repeats." }
     ]
 };
+
+// ==========================================
+// QUESTION LOADER — DB first, fallback to quizBank
+// ==========================================
+async function loadQuestionsFromDB() {
+    if (!supabaseClient) return;
+    try {
+        const { data, error } = await supabaseClient
+            .from('questions')
+            .select('id, course_code, question, options, correct_index, explanation, image_url, order_index')
+            .eq('verified', true)
+            .order('course_code', { ascending: true })
+            .order('order_index', { ascending: true });
+        if (error) throw error;
+        questionsFromDB = {};
+        (data || []).forEach(row => {
+            if (!questionsFromDB[row.course_code]) questionsFromDB[row.course_code] = [];
+            questionsFromDB[row.course_code].push({
+                q: row.question,
+                o: row.options,
+                a: row.correct_index,
+                why: row.explanation,
+                img: row.image_url
+            });
+        });
+        const courses = Object.keys(questionsFromDB).length;
+        const total = Object.values(questionsFromDB).reduce((n, arr) => n + arr.length, 0);
+        console.log(`✅ Loaded ${total} questions from DB across ${courses} courses`);
+    } catch (err) {
+        console.warn('⚠️ Question load failed, using fallback:', err);
+        questionsFromDB = {};
+    }
+}
+
+function getQuestionsForCourse(code) {
+    if (questionsFromDB[code] && questionsFromDB[code].length > 0) return questionsFromDB[code];
+    if (quizBank[code] && quizBank[code].length > 0) return quizBank[code];
+    return null;
+}
+
+function courseHasQuiz(code) {
+    return !!getQuestionsForCourse(code);
+}
 
 // ==========================================
 // AUTH
@@ -277,11 +263,11 @@ async function handleSignedIn(user) {
     currentUser = { id: user.id, username, university, email: user.email };
     await ensureProfile(user);
     await loadUserData(user);
+    await loadQuestionsFromDB();   // ← load questions BEFORE rendering
     enterApp();
 }
 
 function enterApp() {
-    // BULLETPROOF: hide auth using inline !important — cannot be overridden
     const authEl = $('auth-container');
     if (authEl) authEl.style.setProperty('display', 'none', 'important');
     $('app-container').classList.remove('hidden-view');
@@ -420,7 +406,13 @@ function renderReviewSection() {
 function startReviewQuiz() {
     if (!reviewCache.length) { alert('Your review deck is empty!'); return; }
     const questions = [], sources = [];
-    reviewCache.forEach(i => { const b = quizBank[i.code]; if (b && b[i.idx]) { questions.push(b[i.idx]); sources.push({ code: i.code, idx: i.idx }); } });
+    reviewCache.forEach(i => {
+        const bank = getQuestionsForCourse(i.code);
+        if (bank && bank[i.idx]) {
+            questions.push(bank[i.idx]);
+            sources.push({ code: i.code, idx: i.idx });
+        }
+    });
     if (!questions.length) { alert('No valid questions.'); return; }
     for (let i = questions.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -448,7 +440,7 @@ function renderCurriculum(level) {
     renderOverallStats();
     if (!courses.length) { container.innerHTML = '<p style="color:var(--text-muted)">No courses for this level yet.</p>'; return; }
     courses.forEach(course => {
-        const hasQuiz = !!quizBank[course.code];
+        const hasQuiz = courseHasQuiz(course.code);
         const prog = getCourseProgress(course.code);
         let badge = '';
         if (prog) {
@@ -484,7 +476,8 @@ function openCourseDetail(code) {
     const course = findCourse(code);
     if (!course) return;
     activeCourseCode = code;
-    const hasQuiz = !!quizBank[code];
+    const questions = getQuestionsForCourse(code);
+    const hasQuiz = !!questions && questions.length > 0;
     const prog = getCourseProgress(code);
     let progLine = '';
     if (prog) {
@@ -501,7 +494,7 @@ function openCourseDetail(code) {
         </div>
         <div class="detail-topics"><h3>What you'll learn</h3><ul>${course.topics.map(t => `<li>${t}</li>`).join('')}</ul></div>
         <div class="detail-actions">
-            ${hasQuiz ? `<button class="purple-btn" onclick="startQuiz('${course.code}')">📝 Take Quiz (${quizBank[code].length} questions)</button>` : '<button class="grey-btn" disabled>Quiz coming soon</button>'}
+            ${hasQuiz ? `<button class="purple-btn" onclick="startQuiz('${course.code}')">📝 Take Quiz (${questions.length} questions)</button>` : '<button class="grey-btn" disabled>Quiz coming soon</button>'}
             <button class="primary-btn" onclick="showSection('notes-section')">📖 Study Notes</button>
         </div>`;
     showSection('course-detail-section');
@@ -514,7 +507,7 @@ function openCourseDetail(code) {
 let quizState = { code: '', questions: [], sources: null, index: 0, score: 0, answered: false, answers: [], isReview: false };
 
 function startQuiz(code) {
-    const questions = quizBank[code];
+    const questions = getQuestionsForCourse(code);
     if (!questions || !questions.length) { alert(`No questions for ${code} yet.`); return; }
     quizState = { code, questions, sources: null, index: 0, score: 0, answered: false, answers: [], isReview: false };
     showSection('quiz-section');
@@ -725,22 +718,31 @@ function openNote(i, btn) {
     $('note-content').innerHTML = notesData[i].html;
 }
 
-const historyData = [
-    { date: 'Nov 8, 1895', title: 'Discovery of X-Rays', body: 'Wilhelm Röntgen at Würzburg University.' },
-    { date: '1913', title: 'First X-Ray Unit in Nigeria', body: 'Massey Street Hospital, Lagos.' },
-    { date: '1987', title: 'RRBN Established', body: 'Decree No. 42 of 1987.' },
-    { date: '2000s+', title: 'Digital Transition', body: 'Nigerian hospitals move from film to digital.' }
-];
-function renderHistory() {
-    const c = $('history-timeline');
-    if (!c) return;
-    c.innerHTML = '';
-    historyData.forEach(i => {
-        const div = document.createElement('div');
-        div.className = 'timeline-item';
-        div.innerHTML = `<div class="timeline-date">${i.date}</div><h4>${i.title}</h4><p>${i.body}</p>`;
-        c.appendChild(div);
-    });
+async function renderHistory() {
+    const container = $('history-timeline');
+    if (!container) return;
+    container.innerHTML = '<p style="color:var(--text-dim);">Loading…</p>';
+    try {
+        const { data, error } = await supabaseClient
+            .from('history_events')
+            .select('*')
+            .order('year', { ascending: true });
+        if (error) throw error;
+        if (!data || !data.length) {
+            container.innerHTML = '<p style="color:var(--text-dim);">No history events yet.</p>';
+            return;
+        }
+        container.innerHTML = data.map(e => `
+            <div class="timeline-item">
+                <div class="timeline-date">${e.year}${e.month ? ' · ' + e.month : ''}${e.day ? ' · ' + e.day : ''}</div>
+                <h4>${e.title}</h4>
+                <p>${e.description || ''}</p>
+            </div>
+        `).join('');
+    } catch (err) {
+        console.warn('History load failed:', err);
+        container.innerHTML = '<p style="color:var(--text-dim);">Could not load history.</p>';
+    }
 }
 
 const libraryData = [
@@ -1057,8 +1059,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             currentUser = null;
             progressCache = {};
             reviewCache = [];
+            questionsFromDB = {};
             $('app-container').classList.add('hidden-view');
-            // CRITICAL: remove the inline display:none so auth screen shows again
             const authEl = $('auth-container');
             if (authEl) authEl.style.removeProperty('display');
             $('auth-password').value = '';
