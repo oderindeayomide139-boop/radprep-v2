@@ -76,6 +76,7 @@
             <button class="nav-btn" data-target="helper-section">🤖 Study Helper</button>
             <button class="nav-btn" data-target="leaderboard-section">🏆 Leaderboard</button>
             <button class="nav-btn" data-target="profile-section">👤 Profile</button>
+            <button class="nav-btn" data-target="admin-section" id="admin-nav-btn" style="display:none;">🛠️ Admin</button>
         </nav>
         <button id="logout-btn">🚪 Log Out</button>
     </aside>
@@ -215,8 +216,8 @@
         <section id="library-section" class="app-section hidden-section">
             <div class="info-container">
                 <div class="info-banner green-banner">
-                    <h3>📄 Free Reference Library</h3>
-                    <p>Curated open-access resources.</p>
+                    <h3>📄 Reference Library</h3>
+                    <p>Course materials for your level plus curated open-access resources.</p>
                 </div>
                 <div class="library-grid" id="library-grid"></div>
             </div>
@@ -290,9 +291,7 @@
                         <p><strong>Member since:</strong> <span id="profile-member-since">—</span></p>
                     </div>
                 </div>
-
                 <div id="profile-stats" class="overall-stats"></div>
-
                 <div class="profile-two-col">
                     <div class="profile-card">
                         <h3>📈 Recent Activity</h3>
@@ -303,7 +302,6 @@
                         <div id="profile-courses"><p style="color:var(--text-dim);">Loading…</p></div>
                     </div>
                 </div>
-
                 <div class="profile-card">
                     <h3>🔐 Change Password</h3>
                     <div class="password-form">
@@ -314,11 +312,75 @@
                         <p id="password-message" class="hidden-view"></p>
                     </div>
                 </div>
-
                 <div class="profile-card">
                     <h3>📦 Export Your Data</h3>
                     <p>Download all your progress as a JSON file.</p>
                     <button id="export-data-btn" class="green-btn" style="margin-top:10px;">Download My Data</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="admin-section" class="app-section hidden-section">
+            <div class="info-container">
+                <div class="info-banner purple-banner">
+                    <h3>🛠️ Admin Panel</h3>
+                    <p>Only visible to administrators. Manage questions, upload PDFs, import content.</p>
+                </div>
+                <div class="admin-tabs">
+                    <button class="admin-tab active" data-admin="questions">📋 Review Questions</button>
+                    <button class="admin-tab" data-admin="upload">📤 Upload PDF</button>
+                    <button class="admin-tab" data-admin="import">📥 CSV Import</button>
+                    <button class="admin-tab" data-admin="stats">📊 Stats</button>
+                </div>
+                <div id="admin-questions-view" class="admin-view">
+                    <div class="admin-controls">
+                        <select id="admin-course-select"></select>
+                        <button id="admin-refresh-questions" class="primary-btn">🔄 Refresh</button>
+                    </div>
+                    <div id="admin-questions-list"></div>
+                </div>
+                <div id="admin-upload-view" class="admin-view hidden-view">
+                    <div class="admin-form">
+                        <label>Course</label>
+                        <select id="admin-upload-course"></select>
+                        <label>Level</label>
+                        <select id="admin-upload-level">
+                            <option value="100L">100L</option>
+                            <option value="200L">200L</option>
+                            <option value="300L">300L</option>
+                            <option value="400L">400L</option>
+                            <option value="500L">500L</option>
+                        </select>
+                        <label>Title</label>
+                        <input type="text" id="admin-upload-title" placeholder="e.g. Radiation Protection Lecture Notes">
+                        <label>Description (optional)</label>
+                        <input type="text" id="admin-upload-description" placeholder="Optional short description">
+                        <label>File (PDF, PPT, PPTX)</label>
+                        <input type="file" id="admin-upload-file" accept=".pdf,.ppt,.pptx">
+                        <button id="admin-upload-btn" class="green-btn">Upload to Library</button>
+                        <p id="admin-upload-status" class="admin-status hidden-view"></p>
+                    </div>
+                </div>
+                <div id="admin-import-view" class="admin-view hidden-view">
+                    <div class="admin-form">
+                        <label>Course</label>
+                        <select id="admin-import-course"></select>
+                        <label>Level</label>
+                        <select id="admin-import-level">
+                            <option value="100L">100L</option>
+                            <option value="200L">200L</option>
+                            <option value="300L">300L</option>
+                            <option value="400L">400L</option>
+                            <option value="500L">500L</option>
+                        </select>
+                        <label>CSV Content (question,option_a,option_b,option_c,option_d,correct_index,explanation)</label>
+                        <textarea id="admin-import-csv" rows="12" placeholder="Paste CSV rows here. Header row is optional."></textarea>
+                        <button id="admin-import-btn" class="purple-btn">Import to Database</button>
+                        <p id="admin-import-status" class="admin-status hidden-view"></p>
+                    </div>
+                </div>
+                <div id="admin-stats-view" class="admin-view hidden-view">
+                    <div id="admin-stats-content"></div>
                 </div>
             </div>
         </section>

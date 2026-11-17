@@ -1,10 +1,15 @@
 // ==========================================
-// RadPrep v11 — Level lock + Supabase PDF library
+// RadPrep v12 — Admin panel
 // ==========================================
-console.log("🔥 RadPrep v11 loaded");
+console.log("🔥 RadPrep v12 loaded");
 
 const SUPABASE_URL = 'https://puqxlbtdkajzlxgbtsnx.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_wibge1aU64UKmHdchdkywA_jmZ2SNMp';
+
+// ⚠️ ADMIN EMAILS — add your real email here if the check fails
+const ADMIN_EMAILS = [
+    'oderindeayomide139@gmail.com'
+];
 
 let supabaseClient = null;
 if (window.supabase && !SUPABASE_URL.includes("your-project-id")) {
@@ -71,25 +76,11 @@ const curriculumData = {
 };
 
 // ==========================================
-// FALLBACK question bank
+// FALLBACK question bank (Supabase is source of truth)
 // ==========================================
 const quizBank = {
-    "PHY 101": [
-        { q: "The SI unit of frequency is the:", o: ["Hertz", "Newton", "Joule", "Watt"], a: 0, why: "Frequency is measured in hertz (Hz)." },
-        { q: "Which region of the EM spectrum has the shortest wavelength?", o: ["Radio", "Infrared", "X-rays", "Gamma rays"], a: 3, why: "Gamma rays have the shortest wavelengths." },
-        { q: "Newton's second law is expressed as:", o: ["F = ma", "E = mc²", "V = IR", "P = IV"], a: 0, why: "Force equals mass times acceleration." }
-    ],
-    "CHM 101": [
-        { q: "The atomic number of an element equals the number of:", o: ["Neutrons", "Protons", "Electrons + neutrons", "Mass number"], a: 1, why: "Atomic number (Z) equals the proton count." },
-        { q: "Which type of radiation is stopped by a sheet of paper?", o: ["Alpha", "Beta", "Gamma", "X-ray"], a: 0, why: "Alpha particles are minimally penetrating." },
-        { q: "Isotopes of an element differ in:", o: ["Protons", "Electrons", "Neutrons", "Charge"], a: 2, why: "Isotopes differ in neutron count." }
-    ],
     "RDG 301": [
-        { q: "Which interaction predominates in soft tissue at diagnostic energies?", o: ["Photoelectric effect", "Compton scattering", "Pair production", "Coherent scattering"], a: 1, why: "Compton scattering dominates in soft tissue between 30-150 keV." },
-        { q: "The SI unit of equivalent dose is the:", o: ["Gray", "Becquerel", "Sievert", "Coulomb/kg"], a: 2, why: "Equivalent dose is measured in sieverts (Sv)." },
-        { q: "The inverse square law states intensity is proportional to:", o: ["1/d", "1/d²", "d²", "d"], a: 1, why: "Intensity falls off as the square of distance." },
-        { q: "The standard anode material in a diagnostic X-ray tube is:", o: ["Copper", "Tungsten", "Aluminium", "Molybdenum"], a: 1, why: "Tungsten has high atomic number and melting point." },
-        { q: "Increasing kVp primarily affects the beam by:", o: ["Raising quantity and quality", "Lowering quality only", "Only raising quantity", "No effect"], a: 0, why: "Higher kVp increases photon energy and number." }
+        { q: "Which interaction predominates in soft tissue at diagnostic energies?", o: ["Photoelectric effect", "Compton scattering", "Pair production", "Coherent scattering"], a: 1, why: "Compton scattering dominates in soft tissue between 30-150 keV." }
     ]
 };
 
@@ -132,8 +123,13 @@ function getQuestionsForCourse(code) {
     return null;
 }
 
-function courseHasQuiz(code) {
-    return !!getQuestionsForCourse(code);
+function courseHasQuiz(code) { return !!getQuestionsForCourse(code); }
+
+// ==========================================
+// ADMIN CHECK
+// ==========================================
+function isAdmin() {
+    return currentUser && ADMIN_EMAILS.map(e => e.toLowerCase()).includes((currentUser.email || '').toLowerCase());
 }
 
 // ==========================================
@@ -165,10 +161,8 @@ function toggleAuthMode(e) {
 async function handleAuthSubmit() {
     if (!supabaseClient) return showAuthError('Server not reachable. Please refresh.');
     clearAuthError();
-
     const username = ($('auth-username').value || '').trim();
     const password = ($('auth-password').value || '').trim();
-
     if (!username) return showAuthError('Please enter a username.');
     if (password.length < 6) return showAuthError('Password must be at least 6 characters.');
 
@@ -179,7 +173,6 @@ async function handleAuthSubmit() {
         if (!email || !email.includes('@')) return showAuthError('Please enter a valid email address.');
         if (!university) return showAuthError('Please select your university.');
         if (!level) return showAuthError('Please select your level.');
-
         setAuthButtonLoading(true);
         try {
             const { data, error } = await supabaseClient.auth.signUp({
@@ -203,16 +196,13 @@ async function handleAuthSubmit() {
         try {
             const { data: email, error: lookupErr } = await supabaseClient.rpc('get_email_by_username', { p_username: username });
             if (lookupErr) throw lookupErr;
-            if (!email) {
-                setAuthButtonLoading(false);
-                return showAuthError('Username not found. Please check your spelling or sign up.');
-            }
+            if (!email) { setAuthButtonLoading(false); return showAuthError('Username not found. Please check your spelling or sign up.'); }
             const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
             if (error) throw error;
         } catch (err) {
             setAuthButtonLoading(false);
             if ((err.message || '').includes('Invalid login')) showAuthError('Invalid username or password.');
-            else if ((err.message || '').includes('Email not confirmed')) showAuthError('Email not confirmed. Disable "Confirm email" in Supabase.');
+            else if ((err.message || '').includes('Email not confirmed')) showAuthError('Email not confirmed. Contact admin.');
             else showAuthError(err.message || 'Login failed.');
         }
     }
@@ -245,7 +235,6 @@ async function loadUserData(user) {
             };
         });
     } catch (err) { console.warn('progress load:', err); progressCache = {}; }
-
     try {
         const { data, error } = await supabaseClient.from('review_deck').select('*').eq('user_id', user.id);
         if (error) throw error;
@@ -260,6 +249,7 @@ async function handleSignedIn(user) {
     const level = user.user_metadata?.level || '300L';
     currentUser = { id: user.id, username, university, email: user.email, level };
     activeLevel = level;
+    console.log('🔐 Logged in as:', username, '·', user.email, '· Admin:', isAdmin());
     await ensureProfile(user);
     await loadUserData(user);
     await loadQuestionsFromDB();
@@ -275,12 +265,15 @@ function enterApp() {
     $('leaderboard-uni-display').textContent = 'University: ' + currentUser.university;
     setAuthButtonLoading(false);
 
-    // LOCK LEVEL: hide all level tabs except the student's registered level
     document.querySelectorAll('.level-btn').forEach(btn => {
         const isUsersLevel = btn.dataset.level === currentUser.level;
         btn.style.display = isUsersLevel ? '' : 'none';
         btn.classList.toggle('active-level', isUsersLevel);
     });
+
+    const adminNavBtn = $('admin-nav-btn');
+    if (adminNavBtn) adminNavBtn.style.display = isAdmin() ? '' : 'none';
+    if (isAdmin()) populateCourseSelects();
 
     activeLevel = currentUser.level;
     renderCurriculum(activeLevel);
@@ -305,10 +298,14 @@ const SECTION_TITLES = {
     'flashcards-section': 'Flashcards', 'quiz-section': 'Question Bank', 'review-section': 'Review Deck',
     'notes-section': 'Study Notes', 'history-section': 'History of Radiography',
     'library-section': 'Reference Library', 'scholarship-section': 'Scholarships & Grants',
-    'helper-section': 'Study Helper', 'leaderboard-section': 'Leaderboard', 'profile-section': 'My Profile'
+    'helper-section': 'Study Helper', 'leaderboard-section': 'Leaderboard', 'profile-section': 'My Profile',
+    'admin-section': 'Admin Panel'
 };
 
 function showSection(sectionId) {
+    if (sectionId === 'admin-section' && !isAdmin()) {
+        sectionId = 'curriculum-section';
+    }
     document.querySelectorAll('.app-section').forEach(s => { s.classList.remove('active-section'); s.classList.add('hidden-section'); });
     const target = $(sectionId);
     if (target) { target.classList.remove('hidden-section'); target.classList.add('active-section'); }
@@ -319,6 +316,7 @@ function showSection(sectionId) {
     if (sectionId === 'review-section') renderReviewSection();
     if (sectionId === 'profile-section') renderProfile();
     if (sectionId === 'library-section') renderLibrary();
+    if (sectionId === 'admin-section') renderAdminQuestions();
 }
 
 function applyTheme(dark) {
@@ -417,10 +415,7 @@ function startReviewQuiz() {
     const questions = [], sources = [];
     reviewCache.forEach(i => {
         const bank = getQuestionsForCourse(i.code);
-        if (bank && bank[i.idx]) {
-            questions.push(bank[i.idx]);
-            sources.push({ code: i.code, idx: i.idx });
-        }
+        if (bank && bank[i.idx]) { questions.push(bank[i.idx]); sources.push({ code: i.code, idx: i.idx }); }
     });
     if (!questions.length) { alert('No valid questions.'); return; }
     for (let i = questions.length - 1; i > 0; i--) {
@@ -572,9 +567,7 @@ function advanceQuiz() {
 async function logQuizAttempt(code, score, total) {
     if (!currentUser || !supabaseClient) return;
     try {
-        await supabaseClient.from('quiz_attempts').insert({
-            user_id: currentUser.id, course_code: code, score, total
-        });
+        await supabaseClient.from('quiz_attempts').insert({ user_id: currentUser.id, course_code: code, score, total });
     } catch (err) { console.warn('logAttempt:', err); }
 }
 
@@ -596,9 +589,7 @@ async function finishQuiz() {
         await submitScoreToSupabase(currentUser.username, currentUser.university, total, store.get('radprep_streak', 1));
         renderLeaderboard();
     }
-}
-
-// ==========================================
+}// ==========================================
 // LEADERBOARD
 // ==========================================
 async function submitScoreToSupabase(username, university, score, streak) {
@@ -732,15 +723,9 @@ async function renderHistory() {
     if (!container) return;
     container.innerHTML = '<p style="color:var(--text-dim);">Loading…</p>';
     try {
-        const { data, error } = await supabaseClient
-            .from('history_events')
-            .select('*')
-            .order('year', { ascending: true });
+        const { data, error } = await supabaseClient.from('history_events').select('*').order('year', { ascending: true });
         if (error) throw error;
-        if (!data || !data.length) {
-            container.innerHTML = '<p style="color:var(--text-dim);">No history events yet.</p>';
-            return;
-        }
+        if (!data || !data.length) { container.innerHTML = '<p style="color:var(--text-dim);">No history events yet.</p>'; return; }
         container.innerHTML = data.map(e => `
             <div class="timeline-item">
                 <div class="timeline-date">${e.year}${e.month ? ' · ' + e.month : ''}${e.day ? ' · ' + e.day : ''}</div>
@@ -767,44 +752,26 @@ async function renderLibrary() {
     const c = $('library-grid');
     if (!c) return;
     c.innerHTML = '<p style="color:var(--text-dim);grid-column:1/-1;">Loading materials…</p>';
-
     const externalHTML = libraryData.map(i =>
         `<div class="library-card"><h4>${i.title}</h4><p>${i.desc}</p><a href="${i.url}" target="_blank" rel="noopener noreferrer">Open Resource ↗</a></div>`
     ).join('');
-
     let pdfSection = '';
     try {
-        const { data, error } = await supabaseClient
-            .from('library_materials')
-            .select('*')
-            .eq('level', currentUser ? currentUser.level : '300L')
-            .order('course_code', { ascending: true });
+        const { data, error } = await supabaseClient.from('library_materials').select('*').eq('level', currentUser ? currentUser.level : '300L').order('course_code', { ascending: true });
         if (error) throw error;
-
         if (!data || !data.length) {
-            pdfSection = `<div class="library-empty" style="grid-column:1/-1;">
-                <h4>📚 No course materials yet for ${currentUser ? currentUser.level : 'your level'}</h4>
-                <p>Lecture materials will appear here when your department uploads them.</p>
-            </div>`;
+            pdfSection = `<div class="library-empty" style="grid-column:1/-1;"><h4>📚 No course materials yet for ${currentUser ? currentUser.level : 'your level'}</h4><p>Lecture materials will appear here when uploaded.</p></div>`;
         } else {
             pdfSection = data.map(row => {
                 const url = supabaseClient.storage.from('Library').getPublicUrl(row.file_path).data.publicUrl;
-                return `<div class="library-card">
-                    <div style="font-size:40px;">📄</div>
-                    <h4>${row.title}</h4>
-                    <p style="font-size:12px;color:var(--text-dim);">${row.course_code}${row.description ? ' · ' + row.description : ''}</p>
-                    <a href="${url}" target="_blank" rel="noopener noreferrer" download>Open Material ↗</a>
-                </div>`;
+                return `<div class="library-card"><div style="font-size:40px;">📄</div><h4>${row.title}</h4><p style="font-size:12px;color:var(--text-dim);">${row.course_code}${row.description ? ' · ' + row.description : ''}</p><a href="${url}" target="_blank" rel="noopener noreferrer" download>Open Material ↗</a></div>`;
             }).join('');
         }
     } catch (err) {
         console.warn('Library load failed:', err);
-        pdfSection = `<p style="color:var(--text-dim);grid-column:1/-1;">Could not load materials. Please try again.</p>`;
+        pdfSection = `<p style="color:var(--text-dim);grid-column:1/-1;">Could not load materials.</p>`;
     }
-
-    c.innerHTML = pdfSection +
-        `<h3 style="grid-column:1/-1;margin:24px 0 0;color:var(--text);font-size:16px;">External Resources</h3>` +
-        externalHTML;
+    c.innerHTML = pdfSection + `<h3 style="grid-column:1/-1;margin:24px 0 0;color:var(--text);font-size:16px;">External Resources</h3>` + externalHTML;
 }
 
 const scholarshipData = [
@@ -854,8 +821,7 @@ function pushChat(text, isUser) {
 // ==========================================
 function formatDate(iso) {
     if (!iso) return '—';
-    const d = new Date(iso);
-    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 async function renderProfile() {
@@ -864,53 +830,33 @@ async function renderProfile() {
     $('profile-email').textContent = currentUser.email || '—';
     $('profile-university').textContent = currentUser.university || '—';
     $('profile-level').textContent = currentUser.level || '—';
-
     try {
         const { data } = await supabaseClient.from('profiles').select('created_at').eq('id', currentUser.id).maybeSingle();
         $('profile-member-since').textContent = data?.created_at ? formatDate(data.created_at) : '—';
     } catch (err) { $('profile-member-since').textContent = '—'; }
-
     const savedAvatar = store.get('radprep_avatar_' + currentUser.username.toLowerCase(), null);
     if (savedAvatar) $('profile-avatar-preview').src = savedAvatar;
-
     const statsEl = $('profile-stats');
     const s = getOverallStats();
-    if (s.quizzes === 0) {
-        statsEl.classList.add('hidden-view');
-    } else {
+    if (s.quizzes === 0) statsEl.classList.add('hidden-view');
+    else {
         statsEl.classList.remove('hidden-view');
         statsEl.innerHTML = `<span>📊 <strong>${s.quizzes}</strong> quiz${s.quizzes !== 1 ? 'zes' : ''} taken</span><span>🎯 <strong>${s.accuracy}%</strong> average accuracy</span><span>📚 <strong>${s.courses}</strong> course${s.courses !== 1 ? 's' : ''} attempted</span>`;
     }
-
     $('profile-activity').innerHTML = '<p style="color:var(--text-dim);">Loading…</p>';
     try {
         const { data, error } = await supabaseClient.from('quiz_attempts').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false }).limit(10);
         if (error) throw error;
-        if (!data || !data.length) {
-            $('profile-activity').innerHTML = '<p style="color:var(--text-dim);">No quiz attempts yet. Take a quiz to see your progress!</p>';
-        } else {
-            $('profile-activity').innerHTML = data.map(a => `
-                <div class="activity-item">
-                    <span class="activity-course">${a.course_code}</span>
-                    <span class="activity-score">${a.score}/${a.total}</span>
-                    <span class="activity-date">${formatDate(a.created_at)}</span>
-                </div>
-            `).join('');
-        }
-    } catch (err) {
-        $('profile-activity').innerHTML = '<p style="color:var(--text-dim);">Could not load activity.</p>';
-    }
-
+        if (!data || !data.length) $('profile-activity').innerHTML = '<p style="color:var(--text-dim);">No quiz attempts yet.</p>';
+        else $('profile-activity').innerHTML = data.map(a => `<div class="activity-item"><span class="activity-course">${a.course_code}</span><span class="activity-score">${a.score}/${a.total}</span><span class="activity-date">${formatDate(a.created_at)}</span></div>`).join('');
+    } catch (err) { $('profile-activity').innerHTML = '<p style="color:var(--text-dim);">Could not load activity.</p>'; }
     const courseEl = $('profile-courses');
     const entries = Object.entries(progressCache);
-    if (!entries.length) {
-        courseEl.innerHTML = '<p style="color:var(--text-dim);">No courses attempted yet.</p>';
-    } else {
-        courseEl.innerHTML = entries.map(([code, p]) => {
-            const pct = p.bestTotal > 0 ? Math.round((p.best / p.bestTotal) * 100) : 0;
-            return `<div class="course-mini-row"><span class="course-mini-name">${code}</span><span class="course-mini-stats">Best ${p.best}/${p.bestTotal} (${pct}%) · ${p.attempts} attempt${p.attempts > 1 ? 's' : ''}</span></div>`;
-        }).join('');
-    }
+    if (!entries.length) courseEl.innerHTML = '<p style="color:var(--text-dim);">No courses attempted yet.</p>';
+    else courseEl.innerHTML = entries.map(([code, p]) => {
+        const pct = p.bestTotal > 0 ? Math.round((p.best / p.bestTotal) * 100) : 0;
+        return `<div class="course-mini-row"><span class="course-mini-name">${code}</span><span class="course-mini-stats">Best ${p.best}/${p.bestTotal} (${pct}%) · ${p.attempts} attempt${p.attempts > 1 ? 's' : ''}</span></div>`;
+    }).join('');
 }
 
 function showPasswordMessage(msg, type) {
@@ -924,67 +870,230 @@ async function handleChangePassword() {
     const oldPass = $('old-password').value;
     const newPass = $('new-password').value;
     const confirmPass = $('confirm-password').value;
-
     if (!oldPass || !newPass || !confirmPass) return showPasswordMessage('Please fill in all three fields.', 'error');
     if (newPass.length < 6) return showPasswordMessage('New password must be at least 6 characters.', 'error');
     if (newPass !== confirmPass) return showPasswordMessage('New passwords do not match.', 'error');
-    if (newPass === oldPass) return showPasswordMessage('New password must be different from current.', 'error');
-
+    if (newPass === oldPass) return showPasswordMessage('New password must be different.', 'error');
     try {
-        const { error: verifyErr } = await supabaseClient.auth.signInWithPassword({
-            email: currentUser.email,
-            password: oldPass
-        });
+        const { error: verifyErr } = await supabaseClient.auth.signInWithPassword({ email: currentUser.email, password: oldPass });
         if (verifyErr) return showPasswordMessage('Current password is incorrect.', 'error');
-
         const { error } = await supabaseClient.auth.updateUser({ password: newPass });
         if (error) throw error;
-
         showPasswordMessage('✅ Password updated successfully!', 'success');
-        $('old-password').value = '';
-        $('new-password').value = '';
-        $('confirm-password').value = '';
-    } catch (err) {
-        showPasswordMessage(err.message || 'Password update failed.', 'error');
-    }
+        $('old-password').value = ''; $('new-password').value = ''; $('confirm-password').value = '';
+    } catch (err) { showPasswordMessage(err.message || 'Password update failed.', 'error'); }
 }
 
 async function handleForgotPassword() {
     if (!supabaseClient) return alert('Server not reachable.');
     const username = prompt('Enter your username. We will send a reset link to the email on your account:');
     if (!username) return;
-
     const { data: email, error } = await supabaseClient.rpc('get_email_by_username', { p_username: username.trim() });
     if (error) return alert('Error: ' + error.message);
-    if (!email) return alert('Username not found. Please check your spelling.');
-
-    const { error: resetErr } = await supabaseClient.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + window.location.pathname
-    });
-
-    if (resetErr) {
-        alert('Could not send reset email: ' + resetErr.message + '\n\n⚠️ Password reset emails require custom SMTP (Resend). If you don\'t receive an email, ask the admin to reset your password in Supabase Dashboard.');
-        return;
-    }
-
-    alert(`✅ Reset link sent to ${email}.\n\n⚠️ If no email arrives in 5 minutes, password reset emails require custom SMTP setup. Contact the admin.`);
+    if (!email) return alert('Username not found.');
+    const { error: resetErr } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + window.location.pathname });
+    if (resetErr) { alert('Could not send reset email: ' + resetErr.message); return; }
+    alert(`✅ Reset link sent to ${email}.`);
 }
 
 function exportData() {
     if (!currentUser) return;
-    const data = {
-        user: { username: currentUser.username, university: currentUser.university, email: currentUser.email, level: currentUser.level },
-        progress: progressCache,
-        reviewDeck: reviewCache,
-        exportedAt: new Date().toISOString()
-    };
+    const data = { user: { username: currentUser.username, university: currentUser.university, email: currentUser.email, level: currentUser.level }, progress: progressCache, reviewDeck: reviewCache, exportedAt: new Date().toISOString() };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = `radprep-data-${currentUser.username}.json`;
-    a.click();
+    a.href = url; a.download = `radprep-data-${currentUser.username}.json`; a.click();
     URL.revokeObjectURL(url);
+}
+
+// ==========================================
+// ADMIN PANEL
+// ==========================================
+function populateCourseSelects() {
+    const courses = [];
+    for (const level in curriculumData) curriculumData[level].forEach(c => courses.push({ code: c.code, title: c.title }));
+    const html = courses.map(c => `<option value="${c.code}">${c.code} — ${c.title}</option>`).join('');
+    ['admin-course-select', 'admin-upload-course', 'admin-import-course'].forEach(id => {
+        const el = $(id);
+        if (el) el.innerHTML = html;
+    });
+}
+
+function switchAdminTab(tab) {
+    document.querySelectorAll('.admin-tab').forEach(t => t.classList.toggle('active', t.dataset.admin === tab));
+    document.querySelectorAll('.admin-view').forEach(v => v.classList.add('hidden-view'));
+    const target = $('admin-' + tab + '-view');
+    if (target) target.classList.remove('hidden-view');
+    if (tab === 'questions') renderAdminQuestions();
+    if (tab === 'stats') renderAdminStats();
+}
+
+async function renderAdminQuestions() {
+    if (!isAdmin()) return;
+    const list = $('admin-questions-list');
+    const course = $('admin-course-select').value;
+    if (!list || !course) return;
+    list.innerHTML = '<p style="color:var(--text-dim);">Loading…</p>';
+    try {
+        const { data, error } = await supabaseClient.from('questions').select('*').eq('course_code', course).eq('verified', false).order('order_index', { ascending: true });
+        if (error) throw error;
+        if (!data || !data.length) { list.innerHTML = '<p style="color:var(--text-dim);">✅ No unverified questions for ' + course + '. All caught up!</p>'; return; }
+        list.innerHTML = data.map(q => {
+            const optsHtml = q.options.map((opt, i) => `<li class="${i === q.correct_index ? 'admin-q-correct' : ''}">${String.fromCharCode(65 + i)}. ${opt}</li>`).join('');
+            return `<div class="admin-question-card">
+                <div class="admin-q-header"><span class="admin-q-index">#${q.order_index}</span><span class="admin-q-course">${q.course_code}</span></div>
+                <h4>${q.question}</h4>
+                <ul class="admin-q-options">${optsHtml}</ul>
+                ${q.explanation ? `<p class="admin-q-explanation"><strong>Explanation:</strong> ${q.explanation}</p>` : ''}
+                <div class="admin-q-actions">
+                    <button class="green-btn" onclick="approveQuestion('${q.id}')">✅ Approve</button>
+                    <button class="grey-btn" onclick="deleteQuestion('${q.id}')">🗑️ Delete</button>
+                </div>
+            </div>`;
+        }).join('');
+    } catch (err) {
+        list.innerHTML = '<p style="color:#ef4444;">❌ ' + (err.message || 'Failed to load') + '</p>';
+    }
+}
+
+window.approveQuestion = async function(id) {
+    if (!isAdmin()) return;
+    const { error } = await supabaseClient.from('questions').update({ verified: true }).eq('id', id);
+    if (error) return alert('Error: ' + error.message);
+    await loadQuestionsFromDB();
+    renderAdminQuestions();
+};
+
+window.deleteQuestion = async function(id) {
+    if (!isAdmin()) return;
+    if (!confirm('Delete this question permanently?')) return;
+    const { error } = await supabaseClient.from('questions').delete().eq('id', id);
+    if (error) return alert('Error: ' + error.message);
+    await loadQuestionsFromDB();
+    renderAdminQuestions();
+};
+
+async function renderAdminStats() {
+    if (!isAdmin()) return;
+    const c = $('admin-stats-content');
+    c.innerHTML = 'Loading…';
+    try {
+        const { data, error } = await supabaseClient.from('questions').select('course_code, verified');
+        if (error) throw error;
+        const byCourse = {};
+        (data || []).forEach(q => {
+            if (!byCourse[q.course_code]) byCourse[q.course_code] = { verified: 0, unverified: 0, total: 0 };
+            byCourse[q.course_code].total++;
+            if (q.verified) byCourse[q.course_code].verified++;
+            else byCourse[q.course_code].unverified++;
+        });
+        const rows = Object.entries(byCourse).sort().map(([code, s]) => `<tr><td><strong>${code}</strong></td><td>${s.verified}</td><td>${s.unverified}</td><td>${s.total}</td></tr>`).join('');
+        c.innerHTML = `<table class="admin-table"><thead><tr><th>Course</th><th>Verified</th><th>Unverified</th><th>Total</th></tr></thead><tbody>${rows || '<tr><td colspan="4" style="text-align:center;color:var(--text-dim);">No questions yet.</td></tr>'}</tbody></table>`;
+    } catch (err) {
+        c.innerHTML = '<p style="color:#ef4444;">❌ ' + (err.message || 'Failed to load stats') + '</p>';
+    }
+}
+
+async function handleAdminUpload() {
+    if (!isAdmin()) return alert('Not authorized');
+    const course = $('admin-upload-course').value;
+    const level = $('admin-upload-level').value;
+    const title = $('admin-upload-title').value.trim();
+    const description = $('admin-upload-description').value.trim();
+    const file = $('admin-upload-file').files[0];
+    const status = $('admin-upload-status');
+    status.classList.remove('hidden-view');
+
+    if (!file) { status.className = 'admin-status error'; status.textContent = '❌ Please select a file.'; return; }
+    if (!title) { status.className = 'admin-status error'; status.textContent = '❌ Please enter a title.'; return; }
+
+    status.className = 'admin-status'; status.textContent = '⏳ Uploading file to storage…';
+    const path = `${level}/${file.name}`;
+    const { error: uploadErr } = await supabaseClient.storage.from('Library').upload(path, file, { upsert: true });
+    if (uploadErr) { status.className = 'admin-status error'; status.textContent = '❌ Upload failed: ' + uploadErr.message; return; }
+
+    status.textContent = '⏳ Saving to database…';
+    const { error: dbErr } = await supabaseClient.from('library_materials').insert({
+        course_code: course, level: level, title: title, description: description || null, file_path: path, file_size: file.size
+    });
+    if (dbErr) { status.className = 'admin-status error'; status.textContent = '❌ DB error: ' + dbErr.message; return; }
+
+    status.className = 'admin-status success';
+    status.textContent = `✅ Uploaded "${title}" for ${course} (${level}). It now appears in the library for ${level} students.`;
+    $('admin-upload-title').value = '';
+    $('admin-upload-description').value = '';
+    $('admin-upload-file').value = '';
+}
+
+function parseCSV(text) {
+    const rows = [];
+    let current = [], field = '', inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (inQuotes) {
+            if (ch === '"') {
+                if (text[i+1] === '"') { field += '"'; i++; }
+                else inQuotes = false;
+            } else field += ch;
+        } else {
+            if (ch === '"') inQuotes = true;
+            else if (ch === ',') { current.push(field); field = ''; }
+            else if (ch === '\n' || ch === '\r') {
+                if (ch === '\r' && text[i+1] === '\n') i++;
+                current.push(field);
+                if (current.some(f => f.trim())) rows.push(current);
+                current = []; field = '';
+            } else field += ch;
+        }
+    }
+    if (field || current.length) {
+        current.push(field);
+        if (current.some(f => f.trim())) rows.push(current);
+    }
+    return rows;
+}
+
+async function handleAdminImport() {
+    if (!isAdmin()) return alert('Not authorized');
+    const course = $('admin-import-course').value;
+    const level = $('admin-import-level').value;
+    const csv = $('admin-import-csv').value.trim();
+    const status = $('admin-import-status');
+    status.classList.remove('hidden-view');
+
+    if (!csv) { status.className = 'admin-status error'; status.textContent = '❌ Please paste CSV content.'; return; }
+
+    const rows = parseCSV(csv);
+    if (!rows.length) { status.className = 'admin-status error'; status.textContent = '❌ No valid rows found.'; return; }
+
+    let startIdx = 0;
+    if (rows[0][0].toLowerCase().includes('question')) startIdx = 1;
+
+    const toInsert = [], errors = [];
+    for (let i = startIdx; i < rows.length; i++) {
+        const row = rows[i];
+        if (row.length < 6) { errors.push(`Row ${i+1}: too few columns`); continue; }
+        const [question, a, b, c, d] = row;
+        const ci = parseInt(row[5], 10);
+        const explanation = row.length > 6 ? row.slice(6).join(',').trim() : '';
+        if (isNaN(ci) || ci < 0 || ci > 3) { errors.push(`Row ${i+1}: invalid correct_index`); continue; }
+        if (!question.trim()) { errors.push(`Row ${i+1}: empty question`); continue; }
+        toInsert.push({
+            course_code: course, level: level, question: question.trim(),
+            options: [a.trim(), b.trim(), c.trim(), d.trim()],
+            correct_index: ci, explanation: explanation, verified: false, order_index: 0
+        });
+    }
+
+    if (!toInsert.length) { status.className = 'admin-status error'; status.textContent = '❌ No valid rows. Errors: ' + errors.slice(0, 5).join('; '); return; }
+
+    status.className = 'admin-status'; status.textContent = `⏳ Importing ${toInsert.length} questions…`;
+    const { error } = await supabaseClient.from('questions').insert(toInsert);
+    if (error) { status.className = 'admin-status error'; status.textContent = '❌ ' + error.message; return; }
+
+    status.className = 'admin-status success';
+    status.textContent = `✅ Imported ${toInsert.length} questions as unverified.${errors.length ? ` ${errors.length} rows skipped.` : ''} Go to "Review Questions" tab to approve them.`;
+    $('admin-import-csv').value = '';
 }
 
 // ==========================================
@@ -1019,7 +1128,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.querySelectorAll('[data-back]').forEach(btn => btn.addEventListener('click', () => showSection(btn.dataset.back)));
     $('theme-btn').addEventListener('click', () => applyTheme(!document.body.classList.contains('dark-mode')));
 
-    // Level tabs are locked to the student's registered level
     document.querySelectorAll('.level-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             if (!currentUser) return;
@@ -1030,6 +1138,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
+    // Flashcard listeners
     $('flashcard').addEventListener('click', () => $('flashcard').classList.toggle('is-flipped'));
     $('flip-btn').addEventListener('click', () => $('flashcard').classList.toggle('is-flipped'));
     $('prev-btn').addEventListener('click', () => { flashcardIndex--; renderFlashcard(); });
@@ -1052,6 +1161,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderFlashcard();
     });
 
+    // Quiz listeners
     $('exit-quiz-btn').addEventListener('click', () => {
         $('quiz-active').classList.add('hidden-view');
         $('quiz-setup').classList.remove('hidden-view');
@@ -1067,6 +1177,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         else showSection('curriculum-section');
     });
 
+    // Profile listeners
     $('change-password-btn').addEventListener('click', handleChangePassword);
     $('export-data-btn').addEventListener('click', exportData);
     $('profile-avatar-input').addEventListener('change', (e) => {
@@ -1081,6 +1192,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         reader.readAsDataURL(file);
     });
 
+    // Helper listener
     function sendHelper() {
         const input = $('ai-chat-input');
         const text = input.value.trim();
@@ -1092,16 +1204,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('ai-send-btn').addEventListener('click', sendHelper);
     $('ai-chat-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendHelper(); });
 
-    if (!supabaseClient) {
-        showAuthError('Backend not reachable. Please refresh.');
-        return;
-    }
+    // Admin listeners
+    document.querySelectorAll('.admin-tab').forEach(btn => btn.addEventListener('click', () => switchAdminTab(btn.dataset.admin)));
+    const refreshBtn = $('admin-refresh-questions');
+    if (refreshBtn) refreshBtn.addEventListener('click', renderAdminQuestions);
+    const uploadBtn = $('admin-upload-btn');
+    if (uploadBtn) uploadBtn.addEventListener('click', handleAdminUpload);
+    const importBtn = $('admin-import-btn');
+    if (importBtn) importBtn.addEventListener('click', handleAdminImport);
+    const courseSelect = $('admin-course-select');
+    if (courseSelect) courseSelect.addEventListener('change', renderAdminQuestions);
+
+    if (!supabaseClient) { showAuthError('Backend not reachable. Please refresh.'); return; }
 
     supabaseClient.auth.onAuthStateChange(async (event, session) => {
         console.log('Auth event:', event);
-        if (event === 'SIGNED_IN' && session?.user) {
-            await handleSignedIn(session.user);
-        } else if (event === 'SIGNED_OUT') {
+        if (event === 'SIGNED_IN' && session?.user) await handleSignedIn(session.user);
+        else if (event === 'SIGNED_OUT') {
             currentUser = null;
             progressCache = {};
             reviewCache = [];
@@ -1111,10 +1230,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (authEl) authEl.style.removeProperty('display');
             $('auth-password').value = '';
             clearAuthError();
-            document.querySelectorAll('.level-btn').forEach(btn => {
-                btn.style.display = '';
-                btn.classList.remove('active-level');
-            });
+            document.querySelectorAll('.level-btn').forEach(btn => { btn.style.display = ''; btn.classList.remove('active-level'); });
+            const adminNavBtn = $('admin-nav-btn');
+            if (adminNavBtn) adminNavBtn.style.display = 'none';
         }
     });
 
